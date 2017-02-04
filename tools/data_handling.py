@@ -30,8 +30,9 @@ def enrich_emails(overwrite=False):
     '''Adds the sender column to the email dataframe. By default takes it from
     "training_info_enriched.csv".
         Arguments:
-            - overwrite: whether you want to recompute the enrichment. If True,
-            the enrichment will be recomputed and the file overwritten.
+            - overwrite (bool): whether you want to recompute the enrichment.
+            If True, the enrichment will be recomputed and the file
+            overwritten.
         Output:
             - pd dataframe: the emails enriched. The columns are [mid, date,
             body, recipients, sender]
