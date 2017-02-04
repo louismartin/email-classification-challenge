@@ -48,4 +48,5 @@ def enrich_emails(overwrite=False):
         emails.to_csv(enriched_emails_path)
     else:
         emails = pd.read_csv(enriched_emails_path)
+        emails = emails.set_index("mid")
     return emails
