@@ -15,7 +15,7 @@ Body:\n {body}".format(**email_dict)
     print(email_content)
 
 
-def emails_sent_distribution(email_senders, fig_number=None):
+def emails_sent_distribution(email_senders, bins=20, fig_number=None):
     '''Plots the distribution of number of emails sent by sender.
         Arguments:
             - email_senders (pd dataframe): the pd dataframe containing the
@@ -27,7 +27,7 @@ def emails_sent_distribution(email_senders, fig_number=None):
         plt.figure(fig_number)
     else:
         plt.figure()
-    plt.hist(n_emails_sent.as_matrix(), bins=20, normed=True)
+    plt.hist(n_emails_sent.as_matrix(), bins=bins, normed=True)
     plt.title("Number of email sent distribution")
     plt.xlabel("Number of email sent")
     plt.ylabel("Frequency")
