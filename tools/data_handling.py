@@ -12,9 +12,9 @@ def load_emails():
             recipients] and the id is mid.
     '''
     training_info_path = op.join(DATA_FOLDER, "training_info.csv")
-    emails = pd.read_csv(training_info_path)
-    emails = emails.set_index("mid")
-    return emails
+    df_emails = pd.read_csv(training_info_path)
+    df_emails = df_emails.set_index("mid"df_)
+    return df_emails
 
 
 def load_email_senders():
@@ -39,14 +39,14 @@ def enrich_emails(overwrite=False):
     '''
     enriched_emails_path = op.join(DATA_FOLDER, "training_info_enriched.csv")
     if overwrite or not op.exists(enriched_emails_path):
-        emails = load_emails()
-        email_senders = load_email_senders()
-        emails["sender"] = ""
-        for index, row in email_senders.iterrows():
+        df_emails = load_emails()
+        df_email_senders = load_email_senders()
+        df_emails["sender"] = ""
+        for index, row in df_email_senders.iterrows():
             for mid in row["mids"].split():
-                emails.set_value(int(mid), "sender", row["sender"])
-        emails.to_csv(enriched_emails_path)
+                df_emails.set_value(int(mid), "sender", row["sender"])
+        df_emails.to_csv(enriched_emails_path)
     else:
-        emails = pd.read_csv(enriched_emails_path)
-        emails = emails.set_index("mid")
-    return emails
+        df_emails = pd.read_csv(enriched_emails_path)
+        df_emails = df_emails.set_index("mid")
+    return df_emails
