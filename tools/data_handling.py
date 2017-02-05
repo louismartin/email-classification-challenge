@@ -27,8 +27,8 @@ def load_email_senders():
 
 
 def enrich_emails(overwrite=False):
-    '''Adds the sender column to the email dataframe. By default takes it from
-    "training_info_enriched.csv".
+    '''Adds the sender column to the emails dataframe and returns it. By
+    default takes it from "training_info_enriched.csv".
         Arguments:
             - overwrite (bool): whether you want to recompute the enrichment.
             If True, the enrichment will be recomputed and the file
@@ -50,3 +50,15 @@ def enrich_emails(overwrite=False):
         df_emails = pd.read_csv(enriched_emails_path)
         df_emails = df_emails.set_index("mid")
     return df_emails
+
+
+def unique_recipients(df_emails):
+    '''Returns a sorted list of all unique recipients
+        Arguments:
+            - df_emails (pd dataframe): the emails dataframe.
+        Output:
+            - list: all unique recipients.
+    '''
+    all_recipients = df_emails["recipients"].str.cat(sep=" ").split()
+    unique_recipients = set(all_recipients)
+    return sorted(list(unique_recipients))
