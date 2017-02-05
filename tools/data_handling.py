@@ -13,7 +13,7 @@ def load_emails():
     '''
     training_info_path = op.join(DATA_FOLDER, "training_info.csv")
     df_emails = pd.read_csv(training_info_path)
-    df_emails = df_emails.set_index("mid"df_)
+    df_emails = df_emails.set_index("mid")
     return df_emails
 
 
