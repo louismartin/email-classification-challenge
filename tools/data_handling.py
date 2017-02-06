@@ -63,3 +63,21 @@ def unique_recipients(df_emails):
     unique_recipients = set(all_recipients)
     # we need to get rid of recipients that are not emails
     return sorted([rec for rec in list(unique_recipients) if "@" in rec])
+
+
+def address_book(recipients):
+    '''Returns a set containing all names that can be found in the recipients'
+    email addresses.
+        Arguments:
+            - recipients (iterable): contains all the unique recipients
+            "verfied" email addresses.
+    '''
+    address_book = set()
+    for rec in recipients:
+        split_address = rec.split("@")
+        if len(split_address) > 1:
+                potential_names = split_address[0].split(".")
+                for name in potential_names:
+                    if not name.isdigit() and len(name) > 1:
+                        address_book.add(name)
+    return address_book
