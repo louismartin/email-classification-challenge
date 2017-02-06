@@ -12,8 +12,8 @@ def print_email_by_id(df_emails, mid):
             - mid (int)
     '''
     email_dict = df_emails.loc[mid].to_dict()
-    email_content = "From: {sender} \nTo: {recipients}\nOn: {date} \n\
-Body:\n {body}".format(**email_dict)
+    email_content = "From: {sender}\nTo: {recipients}\nOn: {date}\n\
+Body:\n    {body}".format(**email_dict)
     print(email_content)
 
 
