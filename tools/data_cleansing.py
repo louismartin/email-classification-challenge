@@ -1,4 +1,4 @@
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords, words
 
 
 def remove_numbers_and_ponctuation(text_series):
@@ -32,3 +32,25 @@ def remove_stopwords(text_series):
 
     return word_list_series.apply(lambda text: " ".join(filter_stopwords(
         text)))
+
+
+def remove_non_english_words(text_series):
+    '''Remove all non english words as defined by nltk from a pd series.
+        Arguments:
+            - text_series (pd series): the series containing the text data
+            whose non-english words you want to remove.
+        Output:
+            - pd series: a pd series containing the text data where non-english
+            words are removed.
+    '''
+    # TODO: add the list of names and surnames from address book to the list of
+    # english words
+    word_list_series = text_series.str.split(" ")
+    english_words = set(words.words())
+
+    def filter_non_english_words(word_list):
+        return [word for word in word_list
+                if word in english_words]
+
+    return word_list_series.apply(lambda text: " ".join(
+        filter_non_english_words(text)))
