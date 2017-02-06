@@ -46,8 +46,6 @@ def remove_non_english_words(text_series, address_book=None):
             - pd series: a pd series containing the text data where non-english
             words are removed.
     '''
-    # TODO: add the list of names and surnames from address book to the list of
-    # english words
     word_list_series = text_series.str.split(" ")
     english_words = set(words.words())
     if address_book:
