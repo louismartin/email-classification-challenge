@@ -74,10 +74,16 @@ def address_book(recipients):
     '''
     address_book = set()
     for rec in recipients:
+        # At first we split the email address into two to get the separate the
+        # alias from the domain name.
         split_address = rec.split("@")
         if len(split_address) > 1:
+                # Then we split the alias into chunks separated by blocks in
+                # order to identify if these chunks could be names.
                 potential_names = split_address[0].split(".")
                 for name in potential_names:
+                    # We say that a chunk is a name if it's not only digits and
+                    # has at least 2 characters in it.
                     if not name.isdigit() and len(name) > 1:
                         address_book.add(name)
     return address_book
