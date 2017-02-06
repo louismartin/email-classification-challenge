@@ -24,7 +24,7 @@ def remove_stopwords(text_series):
             the text data that were not stopwords.
     '''
     word_list_series = text_series.str.split(" ")
-    stops = stopwords.words("english")
+    stops = set(stopwords.words("english"))
     return word_list_series.apply(lambda text:
                                   [word for word in text
                                    if word not in stops and len(word) > 0])
