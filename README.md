@@ -7,9 +7,10 @@ You need to install the requirements:
 pip install -r requirements.txt
 ```
 ## NLTK
-You also need to download the nltk stopwords.
+You also need to download the nltk stopwords and english words.
 Open a python console and type:
 ```python
 import nltk
 nltk.download("stopwords")
+nltk.download("words")
 ```
