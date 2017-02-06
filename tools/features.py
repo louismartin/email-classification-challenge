@@ -29,22 +29,10 @@ def bag_of_emails(recipient_series, unique_recipients):
         Output:
             - np array: BoW vectors.
     '''
-    recipients_list = recipient_series.str.split()
-    unique_rec_set = set(unique_recipients)
-
-    def filter_non_email(rec_list):
-        return [rec for rec in rec_list if rec in unique_rec_set]
-
-    recipients_list = recipients_list.apply(filter_non_email)
-
-    def single_boe_string(rec_list):
-        boe_vector = np.zeros(len(unique_recipients))
-        for rec in rec_list:
-            idx = unique_recipients.index(rec)
-            boe_vector[idx] = 1
-        return " ".join((str(int(el)) for el in boe_vector))
-
-    recipients_boe = recipients_list.apply(single_boe_string)
-    df_boe = recipients_boe.str.split(pat=" ", expand=True)
-    df_boe = df_boe.apply(pd.to_numeric, downcast="integer")
-    return df_boe.as_matrix()
+    def split_tokenizer(s):
+        return s.split(" ")
+    vectorizer = CountVectorizer(min_df=1,
+                                 tokenizer=split_tokenizer,
+                                 vocabulary=unique_recipients)
+    X = vectorizer.fit_transform(recipient_series)
+    return X
