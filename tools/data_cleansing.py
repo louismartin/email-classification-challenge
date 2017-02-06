@@ -20,11 +20,15 @@ def remove_stopwords(text_series):
             - text_series (pd series): the series containing the text data
             whose stopwords you want to remove.
         Output:
-            - pd series: a pd series containing list objects of the words of
-            the text data that were not stopwords.
+            - pd series: a pd series containing the text data where stopwords
+            are removed.
     '''
     word_list_series = text_series.str.split(" ")
     stops = set(stopwords.words("english"))
-    return word_list_series.apply(lambda text:
-                                  [word for word in text
-                                   if word not in stops and len(word) > 0])
+
+    def filter_stopwords(word_list):
+        return [word for word in word_list
+                if word not in stops and len(word) > 0]
+
+    return word_list_series.apply(lambda text: " ".join(filter_stopwords(
+        text)))
