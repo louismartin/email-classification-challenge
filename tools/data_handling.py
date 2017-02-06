@@ -61,4 +61,5 @@ def unique_recipients(df_emails):
     '''
     all_recipients = df_emails["recipients"].str.cat(sep=" ").split()
     unique_recipients = set(all_recipients)
-    return sorted(list(unique_recipients))
+    # we need to get rid of recipients that are not emails
+    return sorted([rec for rec in list(unique_recipients) if "@" in rec])
