@@ -34,11 +34,14 @@ def remove_stopwords(text_series):
         text)))
 
 
-def remove_non_english_words(text_series):
+def remove_non_english_words(text_series, address_book=None):
     '''Remove all non english words as defined by nltk from a pd series.
         Arguments:
             - text_series (pd series): the series containing the text data
             whose non-english words you want to remove.
+            - address_book (iterable of strings): contains all strings you want
+            to keep even though not an english word as defined by
+            nltk.
         Output:
             - pd series: a pd series containing the text data where non-english
             words are removed.
@@ -47,6 +50,8 @@ def remove_non_english_words(text_series):
     # english words
     word_list_series = text_series.str.split(" ")
     english_words = set(words.words())
+    if address_book:
+        english_words = english_words.union(set(address_book))
 
     def filter_non_english_words(word_list):
         return [word for word in word_list
