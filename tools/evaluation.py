@@ -1,6 +1,34 @@
 import numpy as np
 
 
+def top_emails(Y_pred, recipients_map):
+    """
+    Computes the emails with top scores from numerical matrix.
+    Args:
+        Y_pred (ndarray): Prediciton matrix (floats)
+                          shape = (n_samples, n_emails)
+        recipients_map (ndarray): List of emails strings in the same order
+                                   as axis 1 of Y_pred
+    Returns:
+        predictions (ndarray): Top predicted emails (strings)
+                               shape = n_samples, top
+    """
+    # Get top indexes
+    top = 10
+    best_pred_idx = np.argpartition(-Y_pred, top, axis=1)[:, :top]
+    sorted_ids = np.argsort(
+        Y_pred[np.arange(Y_pred.shape[0])[:, None], best_pred_idx]
+        )[:, ::-1]
+    sorted_idx = best_pred_idx[
+        np.arange(best_pred_idx.shape[0])[:, None],
+        sorted_ids
+        ]
+
+    # Map these indexes to emails
+    predictions = recipients_map[sorted_idx]
+    return predictions
+
+
 def precision(prediction, ground_truth):
     '''Computes the precision at 10 (or len(prediction)).
         Arguments:
