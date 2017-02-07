@@ -7,23 +7,29 @@ from tools.utils import save_and_reload_df
 DATA_FOLDER = "data"
 
 
-def load_emails():
-    '''Returns a pd dataframe containing the content of "training_info.csv".
+def load_emails(set_type="training"):
+    '''Returns a pd dataframe containing the content of "training_info.csv" or
+    "test_info.csv".
+        Arguments:
+            - set_type (str): either "training" or "test".
         Output:
             - pd dataframe: the emails. The columns are [date, body,
             recipients] and the id is mid.
     '''
-    training_info_path = op.join(DATA_FOLDER, "training_info.csv")
+    training_info_path = op.join(DATA_FOLDER, "{}_info.csv".format(set_type))
     df_emails = pd.read_csv(training_info_path, index_col=0)
     return df_emails
 
 
-def load_email_senders():
-    '''Returns a pd dataframe containing the content of "training_set.csv".
+def load_email_senders(set_type="training"):
+    '''Returns a pd dataframe containing the content of "training_set.csv"
+    or "test_set.csv".
+        Arguments:
+            - set_type (str): either "training" or "test".
         Output:
             - pd dataframe: the email senders. The columns are [sender, mids]
     '''
-    training_set_path = op.join(DATA_FOLDER, "training_set.csv")
+    training_set_path = op.join(DATA_FOLDER, "{}_set.csv".format(set_type))
     return pd.read_csv(training_set_path)
 
 
