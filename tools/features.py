@@ -35,4 +35,4 @@ def bag_of_emails(s_recipient, unique_recipients):
                                  tokenizer=split_tokenizer,
                                  vocabulary=unique_recipients)
     X = vectorizer.fit_transform(s_recipient)
-    return X
+    return X, vectorizer
