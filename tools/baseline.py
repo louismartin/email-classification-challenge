@@ -35,7 +35,7 @@ all_senders = emails_ids_per_sender.keys()
 address_books = {}
 i = 0
 
-for sender, ids in emails_ids_per_sender.iteritems():
+for sender, ids in emails_ids_per_sender.items():
     recs_temp = []
     for my_id in ids:
         recipients = training_info[training_info['mid'] == int(my_id)][
@@ -55,7 +55,7 @@ for sender, ids in emails_ids_per_sender.iteritems():
     address_books[sender] = sorted_rec_occ
 
     if i % 10 == 0:
-        print i
+        print(i)
     i += 1
 
 # save all unique recipient names
