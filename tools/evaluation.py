@@ -67,7 +67,7 @@ def evaluate(pred_recipients, true_recipients):
     assert len(pred_recipients) == len(true_recipients)
     score = 0
     for pred, true in zip(pred_recipients, true_recipients):
-        score += precision(pred_recipients, true_recipients)
+        score += precision(pred, true)
     score /= len(pred_recipients)
     return score
 
