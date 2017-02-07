@@ -28,6 +28,7 @@ def bag_of_emails(s_recipient, unique_recipients):
             unique recipients you want to consider.
         Output:
             - np array: BoW vectors.
+            - CountVectorizer: the scikit learn BoW object.
     '''
     def split_tokenizer(s):
         return s.split(" ")
