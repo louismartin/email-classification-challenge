@@ -1,21 +1,30 @@
-def evaluate_one(pred_recipients, true_recipients):
-    """
-    Mean Average Precision @10 on one prediction
-    Args:
-        pred_recipients (1D list): List of 10 strings being the predictions
-        true_recipients (1D list): List of strings being the true values
-    Returns:
-        score (float): The Mean Average Precision @10
-    """
-    assert len(pred_recipients) == 10
-    pred = [int(rec in true_recipients) for rec in pred_recipients]
-    score = 0
-    for i in range(len(pred)):
-        if pred[i]:
-            j = i+1
-            score += sum(pred[:j])/j
-    score /= min(len(true_recipients), len(pred_recipients))
-    return score
+import numpy as np
+
+
+def precision(prediction, ground_truth):
+    '''Computes the precision at 10 (or len(prediction)).
+        Arguments:
+            - ground_truth (str or list): the true recipients.
+            - prediction (str or list): the predicted recipients.
+        Output:
+            - float: the precision
+    '''
+    if type(ground_truth) == str:
+        ground_truth_list = ground_truth.split()
+    else:
+        ground_truth_list = ground_truth
+    n_truth = len(ground_truth_list)
+    if type(prediction) == str:
+        pred_list = prediction.split()
+    else:
+        pred_list = prediction
+    n_pred = len(pred_list)
+    # we identify which predictions are correct
+    pred_truth = [int(rec in ground_truth_list) for rec in pred_list]
+    truth_ids = [i for i, b in enumerate(pred_truth) if b]
+    # we compute the precision at each rank
+    precision_at_rank = np.cumsum(pred_truth) / (np.arange(n_pred)+1)
+    return np.sum(precision_at_rank[truth_ids]) / np.min([n_truth, n_pred])
 
 
 def evaluate(pred_recipients, true_recipients):
@@ -30,18 +39,18 @@ def evaluate(pred_recipients, true_recipients):
     assert len(pred_recipients) == len(true_recipients)
     score = 0
     for pred, true in zip(pred_recipients, true_recipients):
-        score += evaluate_one(pred_recipients, true_recipients)
+        score += precision(pred_recipients, true_recipients)
     score /= len(pred_recipients)
     return score
 
 
-def test_evaluate_one():
+def test_precision():
     # Test 1
     true_recipients = ["true"]
     pred_recipients = ["false"]*10
     # First prediction is true
     pred_recipients[0] = "true"
-    score = evaluate_one(pred_recipients, true_recipients)
+    score = precision(pred_recipients, true_recipients)
     assert score == 1
 
     # Test 2
@@ -49,7 +58,7 @@ def test_evaluate_one():
     pred_recipients = ["false"]*10
     # Seventh prediction is true
     pred_recipients[6] = "true"
-    score = evaluate_one(pred_recipients, true_recipients)
+    score = precision(pred_recipients, true_recipients)
     assert score == (1/7)/min(1, 10)
 
     # Test 3
@@ -58,7 +67,7 @@ def test_evaluate_one():
     # First and third predictions are true
     pred_recipients[0] = "true1"
     pred_recipients[2] = "true2"
-    score = evaluate_one(pred_recipients, true_recipients)
+    score = precision(pred_recipients, true_recipients)
     assert score == (1/1 + 2/3)/min(3, 10)
 
     # Test 4
@@ -67,7 +76,7 @@ def test_evaluate_one():
     # First and second predictions are true
     pred_recipients[0] = "true1"
     pred_recipients[1] = "true3"
-    score = evaluate_one(pred_recipients, true_recipients)
+    score = precision(pred_recipients, true_recipients)
     assert score == (1/1 + 2/2)/min(3, 10)
 
     # Test 5
@@ -76,6 +85,6 @@ def test_evaluate_one():
     # Ninth and tenth predictions are true
     pred_recipients[8] = "true3"
     pred_recipients[9] = "true2"
-    score = evaluate_one(pred_recipients, true_recipients)
+    score = precision(pred_recipients, true_recipients)
     assert score == (1/9 + 2/10)/min(3, 10)
-test_evaluate_one()
+test_precision()
