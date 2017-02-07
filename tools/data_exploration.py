@@ -12,6 +12,8 @@ def print_email_by_id(df_emails, mid):
             - mid (int)
     '''
     email_dict = df_emails.loc[mid].to_dict()
+    if "sender" not in email_dict:
+        email_dict["sender"] = "Unknown sender"
     email_content = "From: {sender}\nTo: {recipients}\nOn: {date}\n\
 Body:\n    {body}".format(**email_dict)
     print(email_content)
