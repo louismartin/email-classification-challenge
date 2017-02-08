@@ -1,5 +1,8 @@
 from nltk.corpus import stopwords, words
 
+from tools.utils import save_and_reload_df
+from tools.data_handling import enrich_emails, unique_recipients, address_book
+
 
 def remove_numbers_and_ponctuation(s_text):
     '''Removes numbers and ponctuation from all text elements of the pd series
@@ -57,3 +60,43 @@ def remove_non_english_words(s_text, address_book=None):
 
     return s_word_list.apply(lambda text: " ".join(
         filter_non_english_words(text)))
+
+
+def clean(df, except_words):
+    print("Removing numbers and punctuation")
+    df["body"] = remove_numbers_and_ponctuation(df["body"])
+    print("Removing stopwords")
+    df["body"] = remove_stopwords(df["body"])
+    print("Removing non english words")
+    df["body"] = remove_non_english_words(df["body"],
+                                          address_book=except_words)
+    df["body"] = df["body"].fillna("")
+    return df
+
+
+@save_and_reload_df
+def get_clean_df_train(ratio=0.9):
+    """Quick'n'Dirty method"""
+    df_emails = enrich_emails()
+
+    n_train = int(ratio * df_emails.shape[0])
+    df_train = df_emails.sample(n=n_train, random_state=0)
+
+    recipients = unique_recipients(df_train)
+    names = address_book(recipients)
+    df_train = clean(df_train, except_words=names)
+    return df_train
+
+
+@save_and_reload_df
+def get_clean_df_test():
+    """Quick'n'Dirty method"""
+    df_emails = enrich_emails()
+
+    df_train = get_clean_df_train()
+    df_test = df_emails.drop(df_train.index)
+
+    recipients = unique_recipients(df_train)
+    names = address_book(recipients)
+    df_test = clean(df_test, except_words=names)
+    return df_test
