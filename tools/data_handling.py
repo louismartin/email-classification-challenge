@@ -1,3 +1,4 @@
+from collections import Counter
 import os.path as op
 
 import pandas as pd
@@ -49,15 +50,19 @@ def enrich_emails():
     return df_emails
 
 
-def unique_recipients(df_emails):
+def unique_recipients(df_emails, min_rec=1):
     '''Returns a sorted list of all unique recipients
         Arguments:
             - df_emails (pd dataframe): the emails dataframe.
+            - min_rec (int): minimum number of times an email has been received
+            by a recipient.
         Output:
             - list: all unique recipients.
     '''
     all_recipients = df_emails["recipients"].str.cat(sep=" ").split()
-    unique_recipients = set(all_recipients)
+    recipients_count = Counter(all_recipients)
+    unique_recipients = set(
+        (rec for rec in recipients_count if recipients_count[rec] >= min_rec))
     # we need to get rid of recipients that are not emails
     return sorted([rec for rec in list(unique_recipients) if "@" in rec])
 
