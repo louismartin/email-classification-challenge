@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-def bag_of_words(s_text, max_features=None):
+def bag_of_words(s_text, min_df=1, max_features=None):
     '''From a pd series containing cleansed text data, computes the bag of words
     (BoW) scikit learn object and returns the BoW vector.
         Arguments:
@@ -14,12 +14,12 @@ def bag_of_words(s_text, max_features=None):
             - np array: BoW vectors.
             - CountVectorizer: the scikit learn BoW object.
     '''
-    vectorizer = CountVectorizer(min_df=1, max_features=max_features)
+    vectorizer = CountVectorizer(min_df=min_df, max_features=max_features)
     X = vectorizer.fit_transform(s_text)
     return X, vectorizer
 
 
-def bag_of_emails(s_recipient, unique_recipients, max_features=None):
+def bag_of_emails(s_recipient, unique_recipients, min_df=1, max_features=None):
     '''From a pd series containing email recipients, computes a np array that is
     the equivalent of a bag of words for email addresses.
         Arguments:
@@ -37,7 +37,7 @@ def bag_of_emails(s_recipient, unique_recipients, max_features=None):
     if max_features:
         # max_features is not taken into account if there is a vocabulary
         unique_recipients = None
-    vectorizer = CountVectorizer(min_df=1,
+    vectorizer = CountVectorizer(min_df=min_df,
                                  tokenizer=split_tokenizer,
                                  vocabulary=unique_recipients,
                                  max_features=max_features)
