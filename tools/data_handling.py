@@ -1,5 +1,6 @@
 from collections import Counter
 import os.path as op
+import re
 import string
 
 import pandas as pd
@@ -129,28 +130,41 @@ def potential_aliases(name):
     '''
     only_letters_pattern = "[^a-zA-Z]"
     name = name.lower()
-    name = name = "".join((ch for ch in name if ch not in string.punctuation))
-    name_elements = name.split()
-    # Suppose the surname comes second (with middle name last), we can take the
-    # initial of the surname.
-    initial_surname = [name_elements[0], name_elements[1][0]]
-    return [
-        ".".join(name_elements[:2][::-1]),
-        ".".join(name_elements[:2]),
+    name = "".join((ch for ch in name if ch not in string.punctuation))
+    name_elements = name.split()[0:2]
+    global_pot_aliases = [
         ".".join(name_elements[::-1]),
         ".".join(name_elements),
         "..".join(name_elements[::-1]),
-        ".".join(initial_surname[::-1]),
-        "..".join(initial_surname[::-1]),
         "_".join(name_elements[::-1]),
         "_".join(name_elements),
         "-".join(name_elements[::-1]),
         "-".join(name_elements),
-        name_elements[0],
         "".join(name_elements[::-1]),
-        "".join(initial_surname[::-1]),
-        name_elements[1]
     ]
+    if len(name_elements) > 1:
+        # Suppose the surname comes second (with middle name last), we can take
+        # the initial of the surname.
+        initial_surname_1 = [name_elements[0], name_elements[1][0]]
+        # Suppose the surname comes first (with middle name second), we want to
+        # take the initial of the surname
+        initial_surname_2 = [name_elements[0][0], name_elements[1]]
+        inital_pot_aliases = [
+            ".".join(initial_surname_1[::-1]),
+            "..".join(initial_surname_1[::-1]),
+            "".join(initial_surname_1[::-1]),
+            ".".join(initial_surname_2[::-1]),
+            "..".join(initial_surname_2[::-1]),
+            "".join(initial_surname_2[::-1]),
+            ".".join(initial_surname_1),
+            "..".join(initial_surname_1),
+            "".join(initial_surname_1),
+            ".".join(initial_surname_2),
+            "..".join(initial_surname_2),
+            "".join(initial_surname_2),
+        ]
+        global_pot_aliases += inital_pot_aliases
+    return global_pot_aliases
 
 
 def name_to_address(unique_rec_set, domain_names, name):
@@ -167,11 +181,68 @@ def name_to_address(unique_rec_set, domain_names, name):
             - str: the email address or None if none was find in the
             unique_rec_set.
     '''
+    pot_al = potential_aliases(name)
     for domain_name in domain_names:
-        for alias in potential_aliases(name):
+        for alias in pot_al:
             email = "@".join([alias, domain_name])
             if email in unique_rec_set:
                 return email
+
+
+def mail_body_orig_message(unique_rec_set, domain_names, mail_body):
+    '''Very simple heuristic to retrieve email addresses from a mail containing
+    an original message (likely a response).
+        Arguments:
+            - unique_rec_set (iterable): all unique recipients.
+            - domain_names (iterable): all possible domain names (sorted is
+            better for efficiency and likeliness).
+            - mail_body (str): the body of the mail you want to investigate.
+        Output:
+            - list: all the identified emails
+    '''
+    guys_involved = list()
+    original_mail = mail_body.split("-----Original Message-----")[1]
+    # Email parsing (very very ad hoc)
+    from_split = original_mail.split("From")
+    sent_split = from_split[1].split("Sent")
+    to_split = sent_split[1].split("To:")
+    if len(to_split) > 1:  # sometimes there is no "To:"
+        cc_split = to_split[1].split("Cc")
+        if len(cc_split) > 1:  # it is not impossible not to have a "Cc:"
+            subject_split = cc_split[1].split("Subject")
+        else:
+            subject_split = cc_split[0].split("Subject")
+    names = list()
+    sender_name = sent_split[0]
+    names += [sender_name]
+    if len(to_split) > 1:
+        if len(cc_split) > 1:
+            recipients = cc_split[0].split(";")
+            ccs = subject_split[0].split(";")
+            names += ccs
+        else:
+            recipients = subject_split[0].split(";")
+        names += recipients
+    for name in names:
+        if "@" in name:
+            # we have an email!! how lucky!!
+            mail_match = re.search("\<(.*@.*)>", name)
+            mail_to_match = re.search("\[mailto:(.*@.*)\]", name)
+            if mail_match:
+                e_mail = mail_match.group(1)
+            elif mail_to_match:
+                e_mail = mail_to_match.group(1)
+            else:
+                e_mail = "".join(
+                    (ch for ch in name if ch not in set([">", ":"]))).strip()
+        else:
+            e_mail = name_to_address(unique_rec_set, domain_names, name)
+        print(e_mail)
+        if e_mail:
+            e_mail = e_mail.lower()
+            if e_mail in unique_rec_set:
+                guys_involved += [e_mail]
+    return guys_involved
 
 
 def test_name_to_address():
