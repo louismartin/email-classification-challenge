@@ -237,7 +237,6 @@ def mail_body_orig_message(unique_rec_set, domain_names, mail_body):
                     (ch for ch in name if ch not in set([">", ":"]))).strip()
         else:
             e_mail = name_to_address(unique_rec_set, domain_names, name)
-        print(e_mail)
         if e_mail:
             e_mail = e_mail.lower()
             if e_mail in unique_rec_set:
