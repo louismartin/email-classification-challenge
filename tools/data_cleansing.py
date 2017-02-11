@@ -91,9 +91,9 @@ def remove_non_english_words(s_text, address_book=None):
 
 def clean(df, except_words):
     print("Removing original message")
-    df["body"] = remove_after_indicator(df_train["body"], "Original Message")
+    df["body"] = remove_after_indicator(df["body"], "Original Message")
     print("Removing forwarded message")
-    df["body"] = remove_after_indicator(df_train["body"], "Forwarded by")
+    df["body"] = remove_after_indicator(df["body"], "Forwarded by")
     print("Removing numbers and punctuation")
     df["body"] = remove_numbers_and_ponctuation(df["body"])
     print("Removing stopwords")
