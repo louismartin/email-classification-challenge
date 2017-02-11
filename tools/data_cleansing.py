@@ -90,15 +90,10 @@ def remove_non_english_words(s_text, address_book=None):
 
 
 def clean(s, except_words):
-    print("Removing original message")
     new_s = remove_after_indicator(s, "Original Message")
-    print("Removing forwarded message")
     new_s = remove_after_indicator(new_s, "Forwarded by")
-    print("Removing numbers and punctuation")
     new_s = remove_numbers_and_ponctuation(new_s)
-    print("Removing stopwords")
     new_s = remove_stopwords(new_s)
-    print("Removing non english words")
     new_s = remove_non_english_words(new_s,
                                      address_book=except_words)
     new_s = new_s.fillna("")
