@@ -1,7 +1,34 @@
+import re
+
 from nltk.corpus import stopwords, words
 
 from tools.utils import save_and_reload_df
 from tools.data_handling import enrich_emails, unique_recipients, address_book
+
+
+def remove_after_indicator_single(text, indicator):
+    '''Removes everything in text after indicator if found. If not found, leaves
+    text as is.
+        Arguments:
+            - text (str): the text you want to shorten.
+            - indicator (str): the indicator after which you want to cut the
+            text.
+        Output:
+            - str: the shortened text.
+    '''
+    indic_match = re.search(indicator, text)
+    if indic_match:
+        simple_text = text[:indic_match.span(0)[0]]
+    else:
+        simple_text = text
+    return simple_text
+
+
+def remove_after_indicator(s_text, indicator):
+    '''Applies remove_after_indicator_single to a pd series.
+    '''
+    return s_text.apply(remove_after_indicator_single,
+                        indicator=indicator)
 
 
 def remove_numbers_and_ponctuation(s_text):
@@ -63,6 +90,10 @@ def remove_non_english_words(s_text, address_book=None):
 
 
 def clean(df, except_words):
+    print("Removing original message")
+    df["body"] = remove_after_indicator(df_train["body"], "Original Message")
+    print("Removing forwarded message")
+    df["body"] = remove_after_indicator(df_train["body"], "Forwarded by")
     print("Removing numbers and punctuation")
     df["body"] = remove_numbers_and_ponctuation(df["body"])
     print("Removing stopwords")
