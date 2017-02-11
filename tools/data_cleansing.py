@@ -89,20 +89,20 @@ def remove_non_english_words(s_text, address_book=None):
         filter_non_english_words(text)))
 
 
-def clean(df, except_words):
+def clean(s, except_words):
     print("Removing original message")
-    df["body"] = remove_after_indicator(df["body"], "Original Message")
+    new_s = remove_after_indicator(s, "Original Message")
     print("Removing forwarded message")
-    df["body"] = remove_after_indicator(df["body"], "Forwarded by")
+    new_s = remove_after_indicator(new_s, "Forwarded by")
     print("Removing numbers and punctuation")
-    df["body"] = remove_numbers_and_ponctuation(df["body"])
+    new_s = remove_numbers_and_ponctuation(new_s)
     print("Removing stopwords")
-    df["body"] = remove_stopwords(df["body"])
+    new_s = remove_stopwords(new_s)
     print("Removing non english words")
-    df["body"] = remove_non_english_words(df["body"],
-                                          address_book=except_words)
-    df["body"] = df["body"].fillna("")
-    return df
+    new_s = remove_non_english_words(new_s,
+                                     address_book=except_words)
+    new_s = new_s.fillna("")
+    return new_s
 
 
 @save_and_reload_df
@@ -115,7 +115,7 @@ def get_clean_df_train(ratio=0.9):
 
     recipients = unique_recipients(df_train)
     names = address_book(recipients)
-    df_train = clean(df_train, except_words=names)
+    df_train["clean body"] = clean(df_train["body"], except_words=names)
     return df_train
 
 
@@ -129,5 +129,5 @@ def get_clean_df_test():
 
     recipients = unique_recipients(df_train)
     names = address_book(recipients)
-    df_test = clean(df_test, except_words=names)
+    df_test["clean body"] = clean(df_test["body"], except_words=names)
     return df_test
