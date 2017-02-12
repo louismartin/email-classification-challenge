@@ -94,8 +94,8 @@ def clean(s, except_words):
     new_s = remove_after_indicator(new_s, "Forwarded by")
     new_s = remove_numbers_and_ponctuation(new_s)
     new_s = remove_stopwords(new_s)
-    new_s = remove_non_english_words(new_s,
-                                     address_book=except_words)
+    # new_s = remove_non_english_words(new_s,
+    #                                  address_book=except_words)
     new_s = new_s.fillna("")
     return new_s
 
