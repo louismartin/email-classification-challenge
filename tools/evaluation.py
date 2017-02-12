@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def top_emails(Y_pred, recipients_map):
+def top_emails(Y_pred, recipients_map, top=10):
     """
     Computes the emails with top scores from numerical matrix.
     Args:
@@ -14,15 +14,17 @@ def top_emails(Y_pred, recipients_map):
                                shape = n_samples, top
     """
     # Get top indexes
-    top = 10
-    best_pred_idx = np.argpartition(-Y_pred, top, axis=1)[:, :top]
-    sorted_ids = np.argsort(
-        Y_pred[np.arange(Y_pred.shape[0])[:, None], best_pred_idx]
-        )[:, ::-1]
-    sorted_idx = best_pred_idx[
-        np.arange(best_pred_idx.shape[0])[:, None],
-        sorted_ids
-        ]
+    if len(Y_pred.shape) > 1 and top < Y_pred.shape[1]:
+        best_pred_idx = np.argpartition(-Y_pred, top, axis=1)[:, :top]
+        sorted_ids = np.argsort(
+            Y_pred[np.arange(Y_pred.shape[0])[:, None], best_pred_idx]
+            )[:, ::-1]
+        sorted_idx = best_pred_idx[
+            np.arange(best_pred_idx.shape[0])[:, None],
+            sorted_ids
+            ]
+    else:
+        sorted_idx = np.argsort(-Y_pred)
 
     # Map these indexes to emails
     predictions = recipients_map[sorted_idx]
