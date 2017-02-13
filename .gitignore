@@ -93,3 +93,6 @@ data/
 
 # Results
 submissions/
+
+# Mac settings
+.DS_Store
