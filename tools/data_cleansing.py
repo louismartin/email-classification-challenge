@@ -64,7 +64,7 @@ def remove_stopwords(s_text):
         text)))
 
 
-def remove_non_english_words(s_text, address_book=None):
+def remove_non_english_words(s_text, except_words=None):
     '''Remove all non english words as defined by nltk from a pd series.
         Arguments:
             - s_text (pd series): the series containing the text data
@@ -78,8 +78,8 @@ def remove_non_english_words(s_text, address_book=None):
     '''
     s_word_list = s_text.str.split(" ")
     english_words = set(words.words())
-    if address_book:
-        english_words = english_words.union(set(address_book))
+    if except_words:
+        english_words = english_words.union(set(except_words))
 
     def filter_non_english_words(word_list):
         return [word for word in word_list
@@ -89,15 +89,15 @@ def remove_non_english_words(s_text, address_book=None):
         filter_non_english_words(text)))
 
 
-def clean(s, except_words):
-    new_s = remove_after_indicator(s, "Original Message")
-    new_s = remove_after_indicator(new_s, "Forwarded by")
-    new_s = remove_numbers_and_ponctuation(new_s)
-    new_s = remove_stopwords(new_s)
-    # new_s = remove_non_english_words(new_s,
-    #                                  address_book=except_words)
-    new_s = new_s.fillna("")
-    return new_s
+def clean(s, except_words, only_english=False):
+    s = remove_after_indicator(s, "Original Message")
+    s = remove_after_indicator(s, "Forwarded by")
+    s = remove_numbers_and_ponctuation(s)
+    s = remove_stopwords(s)
+    if only_english:
+        s = remove_non_english_words(s, except_words=except_words)
+    s = s.fillna("")
+    return s
 
 
 @save_and_reload_df
