@@ -13,4 +13,5 @@ Open a python console and type:
 import nltk
 nltk.download("stopwords")
 nltk.download("words")
+nltk.download("wordnet")
 ```
