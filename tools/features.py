@@ -11,6 +11,7 @@ lemmatizer = WordNetLemmatizer()
 def split_tokenizer(s):
     return s.split(" ")
 
+
 def stem(word, except_words=set()):
     if word in except_words:
         return word
