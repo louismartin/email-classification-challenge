@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 from tools.evaluation import top_emails, evaluate
 
 
-def data_generator(df_train, input_bow, output_bow, batch_size=32):
+def data_generator(df_train, vectorizer, batch_size=32):
     """Online training data generator"""
     while True:
         df_batch = df_train.sample(n=batch_size)
-        X_batch = input_bow.transform(df_batch["clean_body"]).toarray()
-        Y_batch = output_bow.transform(df_batch["recipients"]).toarray()
+        X_batch = vectorizer.vectorize_input(df_batch["clean_body"])
+        Y_batch = vectorizer.vectorize_output(df_batch["recipients"])
         yield (X_batch, Y_batch)
 
 
