@@ -7,7 +7,8 @@ from tools.data_handling import enrich_emails, unique_recipients, address_book
 
 stopwords = set(stopwords.words("english"))
 
-def remove_after_indicator_single(text, indicator):
+
+def remove_after_indicator(text, indicator):
     '''Removes everything in text after indicator if found. If not found, leaves
     text as is.
         Arguments:
@@ -23,13 +24,6 @@ def remove_after_indicator_single(text, indicator):
     else:
         simple_text = text
     return simple_text
-
-
-def remove_after_indicator(s_text, indicator):
-    '''Applies remove_after_indicator_single to a pd series.
-    '''
-    return s_text.apply(remove_after_indicator_single,
-                        indicator=indicator)
 
 
 def remove_numbers_and_ponctuation(s_text):
@@ -86,8 +80,8 @@ def remove_non_english_words(s_text, except_words=None):
 
 
 def clean(s, except_words, only_english=False):
-    s = remove_after_indicator(s, "Original Message")
-    s = remove_after_indicator(s, "Forwarded by")
+    s = s.apply(lambda x: remove_after_indicator(x, "Original Message"))
+    s = s.apply(lambda x: remove_after_indicator(x, "Forwarded by"))
     s = remove_numbers_and_ponctuation(s)
     s = s.apply(lambda x: remove_stopwords(x))
     if only_english:
