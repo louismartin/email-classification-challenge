@@ -84,6 +84,7 @@ def remove_non_english_words(text, except_words=None):
 
 def clean(text, except_words=None, only_english=False):
     ''' Clean a string using several methods '''
+    text = text.lower()
     text = remove_after_indicator(text, "Original Message")
     text = remove_after_indicator(text, "Forwarded by")
     text = remove_punctuation(text)
