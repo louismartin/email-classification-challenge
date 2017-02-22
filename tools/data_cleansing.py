@@ -27,17 +27,24 @@ def remove_after_indicator(text, indicator):
     return simple_text
 
 
-def remove_numbers_and_ponctuation(s_text):
-    '''Removes numbers and ponctuation from all text elements of the pd series
-    and returns the result as a new pd series.
+def remove_punctuation(text):
+    '''Removes punctuation from a string
         Arguments:
-            - s_text (pd series): the series containing the text data you
-            want to cleanse.
+            - text (str): string to cleanse.
         Output:
-            - pd series: the cleansed series.
+            - str: the cleansed string.
     '''
-    only_letters_pattern = "[^a-zA-Z]"
-    return s_text.str.lower().str.replace(only_letters_pattern, " ")
+    return re.sub("[\W_]+", " ", text)
+
+
+def remove_numbers(text):
+    '''Removes numbers from a string
+        Arguments:
+            - text (str): string to cleanse.
+        Output:
+            - str: the cleansed string.
+    '''
+    return re.sub("\d+", " ", text)
 
 
 def remove_stopwords(text):
@@ -78,7 +85,8 @@ def remove_non_english_words(text, except_words=None):
 def clean(s, except_words, only_english=False):
     s = s.apply(lambda x: remove_after_indicator(x, "Original Message"))
     s = s.apply(lambda x: remove_after_indicator(x, "Forwarded by"))
-    s = remove_numbers_and_ponctuation(s)
+    s = s.apply(lambda x: remove_punctuation(x))
+    s = s.apply(lambda x: remove_numbers(x))
     s = s.apply(lambda x: remove_stopwords(x))
     if only_english:
         s = s.apply(lambda x: remove_non_english_words(x, except_words))
