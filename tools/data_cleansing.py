@@ -5,6 +5,7 @@ from nltk.corpus import stopwords, words
 from tools.utils import save_and_reload_df
 from tools.data_handling import enrich_emails, unique_recipients, address_book
 
+stopwords = set(stopwords.words("english"))
 
 def remove_after_indicator_single(text, indicator):
     '''Removes everything in text after indicator if found. If not found, leaves
@@ -44,24 +45,19 @@ def remove_numbers_and_ponctuation(s_text):
     return s_text.str.lower().str.replace(only_letters_pattern, " ")
 
 
-def remove_stopwords(s_text):
-    '''Remove all stopwords from nltk from a pd series.
+def remove_stopwords(text):
+    '''Remove all stopwords from nltk from a string.
         Arguments:
-            - s_text (pd series): the series containing the text data
-            whose stopwords you want to remove.
+            - text (str): the string from which to remove stopwords
         Output:
-            - pd series: a pd series containing the text data where stopwords
-            are removed.
+            - clean_text (str): the string without the stopwords
     '''
-    s_word_list = s_text.str.split(" ")
-    stops = set(stopwords.words("english"))
+    words = text.split(" ")
+    clean_words = [word for word in words
+                   if word not in stopwords and len(word) > 0]
 
-    def filter_stopwords(word_list):
-        return [word for word in word_list
-                if word not in stops and len(word) > 0]
-
-    return s_word_list.apply(lambda text: " ".join(filter_stopwords(
-        text)))
+    clean_text = " ".join(clean_words)
+    return clean_text
 
 
 def remove_non_english_words(s_text, except_words=None):
@@ -93,7 +89,7 @@ def clean(s, except_words, only_english=False):
     s = remove_after_indicator(s, "Original Message")
     s = remove_after_indicator(s, "Forwarded by")
     s = remove_numbers_and_ponctuation(s)
-    s = remove_stopwords(s)
+    s = s.apply(lambda x: remove_stopwords(x))
     if only_english:
         s = remove_non_english_words(s, except_words=except_words)
     s = s.fillna("")
