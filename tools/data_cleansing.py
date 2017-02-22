@@ -6,6 +6,7 @@ from tools.utils import save_and_reload_df
 from tools.data_handling import enrich_emails, unique_recipients, address_book
 
 stopwords = set(stopwords.words("english"))
+english_words = set(words.words())
 
 
 def remove_after_indicator(text, indicator):
@@ -54,29 +55,24 @@ def remove_stopwords(text):
     return clean_text
 
 
-def remove_non_english_words(s_text, except_words=None):
-    '''Remove all non english words as defined by nltk from a pd series.
+def remove_non_english_words(text, except_words=None):
+    '''Remove all non english words as defined by nltk from a string.
         Arguments:
-            - s_text (pd series): the series containing the text data
-            whose non-english words you want to remove.
-            - address_book (iterable of strings): contains all strings you want
-            to keep even though not an english word as defined by
-            nltk.
+            - text (str): string to with words to be removed
+            - except_words (iterable of strings): contains all strings you want
+            to keep even though not an english word as defined by nltk.
         Output:
-            - pd series: a pd series containing the text data where non-english
-            words are removed.
+            - clean_text (str): string where non-english words are removed.
     '''
-    s_word_list = s_text.str.split(" ")
-    english_words = set(words.words())
+    words = text.split()
     if except_words:
-        english_words = english_words.union(set(except_words))
+        words_to_remove = english_words.union(set(except_words))
+    else:
+        words_to_remove = english_words
 
-    def filter_non_english_words(word_list):
-        return [word for word in word_list
-                if word in english_words]
-
-    return s_word_list.apply(lambda text: " ".join(
-        filter_non_english_words(text)))
+    clean_words = [word for word in words if (word not in words_to_remove)]
+    clean_text = " ".join(clean_words)
+    return clean_text
 
 
 def clean(s, except_words, only_english=False):
@@ -85,7 +81,7 @@ def clean(s, except_words, only_english=False):
     s = remove_numbers_and_ponctuation(s)
     s = s.apply(lambda x: remove_stopwords(x))
     if only_english:
-        s = remove_non_english_words(s, except_words=except_words)
+        s = s.apply(lambda x: remove_non_english_words(x, except_words))
     s = s.fillna("")
     return s
 
