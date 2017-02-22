@@ -82,16 +82,16 @@ def remove_non_english_words(text, except_words=None):
     return clean_text
 
 
-def clean(s, except_words, only_english=False):
-    s = s.apply(lambda x: remove_after_indicator(x, "Original Message"))
-    s = s.apply(lambda x: remove_after_indicator(x, "Forwarded by"))
-    s = s.apply(lambda x: remove_punctuation(x))
-    s = s.apply(lambda x: remove_numbers(x))
-    s = s.apply(lambda x: remove_stopwords(x))
+def clean(text, except_words=None, only_english=False):
+    ''' Clean a string using several methods '''
+    text = remove_after_indicator(text, "Original Message")
+    text = remove_after_indicator(text, "Forwarded by")
+    text = remove_punctuation(text)
+    text = remove_numbers(text)
+    text = remove_stopwords(text)
     if only_english:
-        s = s.apply(lambda x: remove_non_english_words(x, except_words))
-    s = s.fillna("")
-    return s
+        text = remove_non_english_words(text, except_words)
+    return text
 
 
 @save_and_reload_df
