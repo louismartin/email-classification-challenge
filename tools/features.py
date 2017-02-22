@@ -57,3 +57,36 @@ class Vectorizer:
     def vectorize_output(self, s_recipients):
         Y = self.output_bow.transform(s_recipients).toarray()
         return Y
+
+
+def graph_of_words(text, window=5):
+    """ Implement the graph of word (GoW) method on the input string.
+    Args:
+        text (str): input text to be represented using GoW
+        window (int): Size of the sliding window
+    Returns:
+        words (list): list of words
+        count (list): Number of inbound edges for each word
+    """
+    graph = {}
+    # Represent a graph as a dictionary
+    # The usual implementation is:
+    #     - Each key is a node and its value is a list of its children
+    # However we will implement it in a reversed way because the final
+    # information we need is the number of inbound nodes, i.e. number
+    # of parents and not number of children. The implementation is:
+    #     - Each key is a node and its value is a list of its parents
+
+    text = clean(text)
+    words = text.split()
+    for i, parent in enumerate(words):
+        children = words[i+1:i+window]
+        for child in children:
+            if child not in graph:
+                graph[child] = set()
+            graph[child].add(parent)
+
+    inbound_count = {k: len(v) for k, v in graph.items()}
+    words = list(graph.keys())
+    count = [len(v) for v in graph.values()]
+    return words, count
