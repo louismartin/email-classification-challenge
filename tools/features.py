@@ -2,6 +2,7 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
+import scipy.sparse as sp
 
 from sklearn.base import BaseEstimator
 from nltk.stem.lancaster import LancasterStemmer
@@ -38,10 +39,9 @@ def lemmatize_tokenizer(s):
 
 
 class Vectorizer:
-    def __init__(self, recipients):
-        self.input_bow = CountVectorizer(tokenizer=stem_tokenizer, min_df=5)
-        self.output_bow = CountVectorizer(tokenizer=split_tokenizer,
-                                          vocabulary=recipients)
+    def __init__(self, input_bow, output_bow):
+        self.input_bow = input_bow
+        self.output_bow = output_bow
 
     def fit_input(self, s_clean_body):
         print("Fitting input ...")
@@ -49,16 +49,20 @@ class Vectorizer:
         self.n_features = len(self.input_bow.get_feature_names())
 
     def fit_output(self, s_recipients):
-        print("Fitting  output ...")
+        print("Fitting output ...")
         self.output_bow.fit(s_recipients)
         self.n_outputs = len(self.output_bow.get_feature_names())
 
     def vectorize_input(self, s_clean_body):
-        X = self.input_bow.transform(s_clean_body).toarray()
+        X = self.input_bow.transform(s_clean_body)
+        if sp.issparse(X):
+            X = X.toarray()
         return X
 
     def vectorize_output(self, s_recipients):
-        Y = self.output_bow.transform(s_recipients).toarray()
+        Y = self.output_bow.transform(s_recipients)
+        if sp.issparse(Y):
+            Y = Y.toarray()
         return Y
 
 
