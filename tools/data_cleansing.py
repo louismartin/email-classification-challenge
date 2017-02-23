@@ -83,9 +83,9 @@ def remove_non_english_words(text, except_words=None):
     return clean_text
 
 
-def stem_words(text):
+def stem_words(text, except_words):
     words = text.split()
-    clean_text = " ".join([stem(word) for word in words])
+    clean_text = " ".join([stem(word, except_words) for word in words])
     return clean_text
 
 
@@ -97,7 +97,7 @@ def clean(text, except_words=None, only_english=False):
     text = remove_punctuation(text)
     text = remove_numbers(text)
     text = remove_stopwords(text)
-    text = stem_words(text)
+    text = stem_words(text, except_words)
     if only_english:
         text = remove_non_english_words(text, except_words)
     return text

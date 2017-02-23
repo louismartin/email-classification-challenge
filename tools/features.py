@@ -12,8 +12,8 @@ def split_tokenizer(s):
     return s.split(" ")
 
 
-def stem(word, except_words=set()):
-    if word in except_words:
+def stem(word, except_words=None):
+    if except_words and (word in except_words):
         return word
     else:
         return(stemmer.stem(word))
