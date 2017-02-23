@@ -1,3 +1,5 @@
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 
@@ -62,18 +64,25 @@ class Vectorizer:
 
 # Code inspired from sklearn.feature_extraction.text.CountVectorizer
 class GoWVectorizer(BaseEstimator):
-    def __init__(self, window=5):
-        self.window = 5
+    def __init__(self, window=5, min_df=1, max_features=None):
+        self.window = window
+        self.min_df = min_df
+        self.max_features = max_features
 
     def _make_vocabulary(self, raw_documents):
         """Create a vocabulary from the documents.
         The vocabulary is a dictionary with the words as keys and their
         associated index as value, e.g. {"foo": 0, "bar": 1, "baz": 2, ...}.
         """
-        unique_words = sorted(set(" ".join(raw_documents).split()))
-        self.vocabulary = {word: i for i, word in enumerate(unique_words)}
-        self.n_features = len(unique_words)
-        self.feature_names = unique_words
+        counter = Counter()
+        counter.update((" ".join(raw_documents)).split())
+        # List of tuples (word, count) from most frequent to less frequent
+        word_count = counter.most_common(self.max_features)
+        words_kept = [word for (word, count)
+                      in word_count if count > self.min_df]
+        self.vocabulary_ = {word: i for i, word in enumerate(words_kept)}
+        self.n_features = len(words_kept)
+        self.feature_names = words_kept
 
     def get_feature_names(self):
         return self.feature_names
@@ -107,7 +116,7 @@ class GoWVectorizer(BaseEstimator):
         n_samples = len(raw_documents)
         X = np.zeros((n_samples, self.n_features))
         for i, doc in enumerate(raw_documents):
-            X[i] = self._gow_vectorizer(doc)
+            X[i] = self._gow_vectorize(doc)
         return X
 
     def fit_transform(self, raw_documents, y=None):
@@ -126,7 +135,7 @@ class GoWVectorizer(BaseEstimator):
         X = self.transform(raw_documents)
         return X
 
-    def _gow_vectorizer(self, text):
+    def _gow_vectorize(self, text):
         """ Implement the graph of word (GoW) method on the input string.
         Args:
             text (str): input text to be represented using GoW
@@ -151,7 +160,7 @@ class GoWVectorizer(BaseEstimator):
 
         # Vector representation of input text
         x = np.zeros(self.n_features)
-        vocabulary = self.vocabulary
+        vocabulary = self.vocabulary_
         for word, parents in graph.items():
             if word in vocabulary:
                 index = vocabulary[word]
