@@ -4,6 +4,7 @@ from nltk.corpus import stopwords, words
 
 from tools.utils import save_and_reload_df
 from tools.data_handling import enrich_emails, unique_recipients, address_book
+from tools.features import stem
 
 stopwords = set(stopwords.words("english"))
 english_words = set(words.words())
@@ -82,6 +83,12 @@ def remove_non_english_words(text, except_words=None):
     return clean_text
 
 
+def stem_words(text):
+    words = text.split()
+    clean_text = " ".join([stem(word) for word in words])
+    return clean_text
+
+
 def clean(text, except_words=None, only_english=False):
     ''' Clean a string using several methods '''
     text = text.lower()
@@ -90,6 +97,7 @@ def clean(text, except_words=None, only_english=False):
     text = remove_punctuation(text)
     text = remove_numbers(text)
     text = remove_stopwords(text)
+    text = stem_words(text)
     if only_english:
         text = remove_non_english_words(text, except_words)
     return text
