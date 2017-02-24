@@ -17,7 +17,7 @@ def save_and_reload_df(func):
         # The file already exists so we just read it from disk
         if os.path.exists(csv_path) and not overwrite:
             print("Reading dataframe from {}".format(csv_path))
-            df = pd.read_csv(csv_path, index_col=0)
+            df = pd.read_csv(csv_path, index_col=0).fillna("")
         # Either the file does not exist or we want to compute it again
         else:
             # Make sure the data directory already exists
