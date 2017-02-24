@@ -97,9 +97,9 @@ def clean(text, except_words=None, only_english=False):
     text = remove_punctuation(text)
     text = remove_numbers(text)
     text = remove_stopwords(text)
-    text = stem_words(text, except_words)
     if only_english:
         text = remove_non_english_words(text, except_words)
+    text = stem_words(text, except_words)
     return text
 
 
