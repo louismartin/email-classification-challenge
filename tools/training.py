@@ -5,16 +5,19 @@ import time
 
 from keras.callbacks import Callback
 import matplotlib.pyplot as plt
+import numpy as np
 
 from tools.evaluation import top_emails, evaluate
 
 
-def data_generator(df_train, vectorizer, batch_size=32):
+def data_generator(df_train, vm, batch_size=32):
     """Online training data generator"""
     while True:
         df_batch = df_train.sample(n=batch_size)
-        X_batch = vectorizer.vectorize_input(df_batch["clean_body"])
-        Y_batch = vectorizer.vectorize_output(df_batch["recipients"])
+        X_batch_body = vm.vectorize_body(df_batch["clean_body"])
+        X_batch_sender = vm.vectorize_sender(df_batch["sender"])
+        X_batch = np.concatenate((X_batch_body, X_batch_sender), axis=1)
+        Y_batch = vm.vectorize_recipients(df_batch["recipients"])
         yield (X_batch, Y_batch)
 
 
