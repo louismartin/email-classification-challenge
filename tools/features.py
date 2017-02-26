@@ -93,7 +93,7 @@ class AbstractFastVectorizer(BaseEstimator):
     def get_feature_names(self):
         return self.feature_names
 
-    def fit(self, raw_documents, y=None):
+    def fit(self, raw_documents):
         """Learn a vocabulary dictionary of all tokens in the raw documents.
         Parameters
         ----------
@@ -153,11 +153,11 @@ class AbstractFastVectorizer(BaseEstimator):
 
 class FastCountVectorizer(AbstractFastVectorizer):
     def __init__(self, min_df=1, max_features=None, vocabulary=None):
-        # Set method used vectorize a single string
-        self._vectorize = self._bow_vectorize
         super(FastCountVectorizer, self).__init__(min_df=min_df,
                                                   max_features=max_features,
                                                   vocabulary=vocabulary)
+        # Set method used to vectorize a single string
+        self._vectorize = self._bow_vectorize
 
     def _bow_vectorize(self, text):
         # Vector representation of input text
@@ -173,12 +173,12 @@ class FastCountVectorizer(AbstractFastVectorizer):
 
 class GoWVectorizer(AbstractFastVectorizer):
     def __init__(self, window=5, min_df=1, max_features=None, vocabulary=None):
-        self.window = window
-        # Set method used vectorize a single string
-        self._vectorize = self._gow_vectorize
         super(GoWVectorizer, self).__init__(min_df=min_df,
                                             max_features=max_features,
                                             vocabulary=vocabulary)
+        self.window = window
+        # Set method used to vectorize a single string
+        self._vectorize = self._gow_vectorize
 
     def _gow_vectorize(self, text):
         """ Implement the graph of word (GoW) method on the input string.
@@ -214,4 +214,48 @@ class GoWVectorizer(AbstractFastVectorizer):
                 # I don't know if it improves performance but it seemed like a
                 # good idea.
                 x[index] = inbound_edges/self.window
+        return x
+
+
+class TwidfVectorizer(GoWVectorizer):
+    def __init__(self, window=5, min_df=1, max_features=None, vocabulary=None):
+        super(TwidfVectorizer, self).__init__(window=window,
+                                              min_df=min_df,
+                                              max_features=max_features,
+                                              vocabulary=vocabulary)
+        # Set method used to vectorize a single string
+        self._vectorize = self._twidf_vectorize
+
+    def _compute_idf(self, raw_documents):
+        n_documents = len(raw_documents)
+        documents = [set(doc.split()) for doc in raw_documents]
+        self.idf = {}
+        for word in self.get_feature_names():
+            df = sum([(word in doc) for doc in documents])
+            self.idf[word] = np.log(n_documents/df)
+
+    def fit(self, raw_documents):
+        """Learn a vocabulary dictionary of all tokens in the raw documents.
+        Parameters
+        ----------
+        raw_documents : iterable
+            An iterable which yields either str, unicode or file objects.
+        Returns
+        -------
+        self
+        """
+        self._make_vocabulary(raw_documents)
+        self._compute_idf(raw_documents)
+        return self
+
+    def _twidf_vectorize(self, text):
+        x = super(TwidfVectorizer, self)._gow_vectorize(text)
+        vocabulary = self.vocabulary_
+        words = set(text.split())
+        for word in words:
+            if word in vocabulary:
+                index = vocabulary[word]
+                idf = self.idf[word]
+                tw = x[index]
+                x[index] = tw * idf
         return x
