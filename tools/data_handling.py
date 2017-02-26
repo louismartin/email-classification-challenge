@@ -128,7 +128,6 @@ def potential_aliases(name):
         Output:
             - list: the list of potential aliases.
     '''
-    only_letters_pattern = "[^a-zA-Z]"
     name = name.lower()
     name = "".join((ch for ch in name if ch not in string.punctuation))
     name_elements = name.split()[0:2]
