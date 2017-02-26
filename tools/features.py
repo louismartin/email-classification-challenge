@@ -38,29 +38,49 @@ def lemmatize_tokenizer(s):
     return [lemmatize(word) for word in s.split(" ")]
 
 
-class Vectorizer:
-    def __init__(self, input_bow, output_bow):
-        self.input_bow = input_bow
-        self.output_bow = output_bow
+class VectorizerManager:
+    def __init__(self,
+                 sender_vectorizer,
+                 body_vectorizer,
+                 recipients_vectorizer):
+        self.sender_vectorizer = sender_vectorizer
+        self.body_vectorizer = body_vectorizer
+        self.recipients_vectorizer = recipients_vectorizer
 
-    def fit_input(self, s_clean_body):
-        print("Fitting input ...")
-        self.input_bow.fit(s_clean_body)
-        self.n_features = len(self.input_bow.get_feature_names())
+    @property
+    def n_features(self):
+        n_features = self.n_senders + self.n_words
+        return n_features
 
-    def fit_output(self, s_recipients):
-        print("Fitting output ...")
-        self.output_bow.fit(s_recipients)
-        self.n_outputs = len(self.output_bow.get_feature_names())
+    def fit_sender(self, s):
+        print("Fitting senders ...")
+        self.sender_vectorizer.fit(s)
+        self.n_senders = len(self.sender_vectorizer.get_feature_names())
 
-    def vectorize_input(self, s_clean_body):
-        X = self.input_bow.transform(s_clean_body)
+    def fit_body(self, s):
+        print("Fitting bodies ...")
+        self.body_vectorizer.fit(s)
+        self.n_words = len(self.body_vectorizer.get_feature_names())
+
+    def fit_recipients(self, s):
+        print("Fitting Recipients ...")
+        self.recipients_vectorizer.fit(s)
+        self.n_outputs = len(self.recipients_vectorizer.get_feature_names())
+
+    def vectorize_sender(self, s):
+        X = self.sender_vectorizer.transform(s)
         if sp.issparse(X):
             X = X.toarray()
         return X
 
-    def vectorize_output(self, s_recipients):
-        Y = self.output_bow.transform(s_recipients)
+    def vectorize_body(self, s):
+        X = self.body_vectorizer.transform(s)
+        if sp.issparse(X):
+            X = X.toarray()
+        return X
+
+    def vectorize_recipients(self, s):
+        Y = self.recipients_vectorizer.transform(s)
         if sp.issparse(Y):
             Y = Y.toarray()
         return Y
