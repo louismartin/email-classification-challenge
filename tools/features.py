@@ -1,7 +1,6 @@
 from collections import Counter
 
 import numpy as np
-import pandas as pd
 import scipy.sparse as sp
 
 from sklearn.base import BaseEstimator
