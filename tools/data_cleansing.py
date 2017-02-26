@@ -91,9 +91,9 @@ def stem_words(text, except_words):
 
 def clean(text, except_words=None, only_english=False):
     ''' Clean a string using several methods '''
-    text = text.lower()
     text = remove_after_indicator(text, "Original Message")
     text = remove_after_indicator(text, "Forwarded by")
+    text = text.lower()
     text = remove_punctuation(text)
     text = remove_numbers(text)
     text = remove_stopwords(text)
