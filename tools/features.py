@@ -68,24 +68,27 @@ class Vectorizer:
 
 # Code inspired from sklearn.feature_extraction.text.CountVectorizer
 class AbstractFastVectorizer(BaseEstimator):
-    def __init__(self, min_df=1, max_features=None):
+    def __init__(self, min_df=1, max_features=None, vocabulary=None):
         self.min_df = min_df
         self.max_features = max_features
+        self.vocabulary = vocabulary
 
     def _make_vocabulary(self, raw_documents):
         """Create a vocabulary from the documents.
         The vocabulary is a dictionary with the words as keys and their
         associated index as value, e.g. {"foo": 0, "bar": 1, "baz": 2, ...}.
         """
-        counter = Counter()
-        counter.update((" ".join(raw_documents)).split())
-        # List of tuples (word, count) from most frequent to less frequent
-        word_count = counter.most_common(self.max_features)
-        words_kept = [word for (word, count)
-                      in word_count if count >= self.min_df]
-        self.vocabulary_ = {word: i for i, word in enumerate(words_kept)}
-        self.n_features = len(words_kept)
-        self.feature_names = words_kept
+        vocabulary = self.vocabulary
+        if not vocabulary:
+            counter = Counter()
+            counter.update((" ".join(raw_documents)).split())
+            # List of tuples (word, count) from most frequent to less frequent
+            word_count = counter.most_common(self.max_features)
+            vocabulary = [word for (word, count)
+                          in word_count if count >= self.min_df]
+        self.vocabulary_ = {word: i for i, word in enumerate(vocabulary)}
+        self.n_features = len(vocabulary)
+        self.feature_names = vocabulary
 
     def get_feature_names(self):
         return self.feature_names
@@ -149,11 +152,12 @@ class AbstractFastVectorizer(BaseEstimator):
 
 
 class FastCountVectorizer(AbstractFastVectorizer):
-    def __init__(self, min_df=1, max_features=None):
+    def __init__(self, min_df=1, max_features=None, vocabulary=None):
         # Set method used vectorize a single string
         self._vectorize = self._bow_vectorize
         super(FastCountVectorizer, self).__init__(min_df=min_df,
-                                                  max_features=max_features)
+                                                  max_features=max_features,
+                                                  vocabulary=vocabulary)
 
     def _bow_vectorize(self, text):
         # Vector representation of input text
@@ -168,12 +172,13 @@ class FastCountVectorizer(AbstractFastVectorizer):
 
 
 class GoWVectorizer(AbstractFastVectorizer):
-    def __init__(self, window=5, min_df=1, max_features=None):
+    def __init__(self, window=5, min_df=1, max_features=None, vocabulary=None):
         self.window = window
         # Set method used vectorize a single string
         self._vectorize = self._gow_vectorize
         super(GoWVectorizer, self).__init__(min_df=min_df,
-                                            max_features=max_features)
+                                            max_features=max_features,
+                                            vocabulary=vocabulary)
 
     def _gow_vectorize(self, text):
         """ Implement the graph of word (GoW) method on the input string.
