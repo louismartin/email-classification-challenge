@@ -67,9 +67,8 @@ class Vectorizer:
 
 
 # Code inspired from sklearn.feature_extraction.text.CountVectorizer
-class GoWVectorizer(BaseEstimator):
-    def __init__(self, window=5, min_df=1, max_features=None):
-        self.window = window
+class AbstractFastVectorizer(BaseEstimator):
+    def __init__(self, min_df=1, max_features=None):
         self.min_df = min_df
         self.max_features = max_features
 
@@ -83,7 +82,7 @@ class GoWVectorizer(BaseEstimator):
         # List of tuples (word, count) from most frequent to less frequent
         word_count = counter.most_common(self.max_features)
         words_kept = [word for (word, count)
-                      in word_count if count > self.min_df]
+                      in word_count if count >= self.min_df]
         self.vocabulary_ = {word: i for i, word in enumerate(words_kept)}
         self.n_features = len(words_kept)
         self.feature_names = words_kept
@@ -120,7 +119,7 @@ class GoWVectorizer(BaseEstimator):
         n_samples = len(raw_documents)
         X = np.zeros((n_samples, self.n_features))
         for i, doc in enumerate(raw_documents):
-            X[i] = self._gow_vectorize(doc)
+            X[i] = self._vectorize(doc)
         return X
 
     def fit_transform(self, raw_documents, y=None):
@@ -138,6 +137,43 @@ class GoWVectorizer(BaseEstimator):
         self.fit(raw_documents)
         X = self.transform(raw_documents)
         return X
+
+    def most_important_words(self, text):
+        """ Returns a comprehensive list of tuples (word, count) sorted
+        in decreasing order of importance.
+        The count is the graph of words measure of number of inbound edges."""
+        counts = self._vectorize(text)
+        words = self.get_feature_names()
+        results = [(x, y) for (y, x) in sorted(zip(counts, words))][::-1]
+        return results
+
+
+class FastCountVectorizer(AbstractFastVectorizer):
+    def __init__(self, min_df=1, max_features=None):
+        # Set method used vectorize a single string
+        self._vectorize = self._bow_vectorize
+        super(FastCountVectorizer, self).__init__(min_df=min_df,
+                                                  max_features=max_features)
+
+    def _bow_vectorize(self, text):
+        # Vector representation of input text
+        x = np.zeros(self.n_features)
+        vocabulary = self.vocabulary_
+        words = text.split()
+        for word in words:
+            if word in vocabulary:
+                index = vocabulary[word]
+                x[index] += 1
+        return x
+
+
+class GoWVectorizer(AbstractFastVectorizer):
+    def __init__(self, window=5, min_df=1, max_features=None):
+        self.window = window
+        # Set method used vectorize a single string
+        self._vectorize = self._gow_vectorize
+        super(GoWVectorizer, self).__init__(min_df=min_df,
+                                            max_features=max_features)
 
     def _gow_vectorize(self, text):
         """ Implement the graph of word (GoW) method on the input string.
@@ -174,12 +210,3 @@ class GoWVectorizer(BaseEstimator):
                 # good idea.
                 x[index] = inbound_edges/self.window
         return x
-
-    def most_important_words(self, text):
-        """ Returns a comprehensive list of tuples (word, count) sorted
-        in decreasing order of importance.
-        The count is the graph of words measure of number of inbound edges."""
-        counts = self._graph_of_words(text)
-        words = self.get_feature_names()
-        results = [(x, y) for (y, x) in sorted(zip(counts, words))][::-1]
-        return results
