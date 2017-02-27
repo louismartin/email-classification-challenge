@@ -24,7 +24,7 @@ class SenderModel():
         self.input_vectorizer = input_vectorizer
         self.output_vectorizer = output_vectorizer
 
-    def train(self, train_prop=1):
+    def train(self, train_prop=1, random_state=None):
         '''Trains the classifier after having vectorized input and output data.
             Args:
                 - train_prop (float): the porportion of emails you want to keep
@@ -33,7 +33,8 @@ class SenderModel():
                 - self
         '''
         # data loading and separation
-        df_train = self.df_emails.sample(frac=train_prop)
+        df_train = self.df_emails.sample(
+            frac=train_prop, random_state=random_state)
         self.train_ids = list(df_train.index.values)
         # feature engineering
         X_train = self.input_vectorizer.fit_transform(df_train["clean body"])
@@ -42,7 +43,7 @@ class SenderModel():
         self.classifier.fit(X_train, Y_train.toarray())
         return self
 
-    def evaluate(self, train_prop=0.7):
+    def evaluate(self, train_prop=0.7, random_state=None):
         '''Computes the precision at 10 for this model on a test set extracted
         from the dataframe.
             Args:
@@ -51,7 +52,7 @@ class SenderModel():
             Returns:
                 - float: the precision at 10.
         '''
-        self.train(train_prop=train_prop)
+        self.train(train_prop=train_prop, random_state=random_state)
         # data loading
         train_mask = self.df_emails.index.isin(self.train_ids)
         df_test = self.df_emails[~train_mask]
