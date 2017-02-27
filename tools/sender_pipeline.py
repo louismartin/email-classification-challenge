@@ -7,11 +7,11 @@ class SenderModel():
         '''
             Args:
                 - df_emails (pd dataframe): the dataframe to use for this
-                model. It needs "clean body" and "recipients" columns.
+                model. It needs "clean_body" and "recipients" columns.
                 - classifier (object): the classifier (or regressor) you want
                 to use. It needs to have the following functions: fit, predict.
                 - input_vectorizer (object): an object that will vectorize the
-                input data given as the "clean body" column of the dataframe.
+                input data given as the "clean_body" column of the dataframe.
                 It needs to have the following functions: fit_transform,
                 transform.
                 - output_vectorizer (object): an object that will vectorize
@@ -37,7 +37,7 @@ class SenderModel():
             frac=train_prop, random_state=random_state)
         self.train_ids = list(df_train.index.values)
         # feature engineering
-        X_train = self.input_vectorizer.fit_transform(df_train["clean body"])
+        X_train = self.input_vectorizer.fit_transform(df_train["clean_body"])
         Y_train = self.output_vectorizer.fit_transform(df_train["recipients"])
         # model fitting
         self.classifier.fit(X_train, Y_train.toarray())
@@ -58,7 +58,7 @@ class SenderModel():
         df_test = self.df_emails[~train_mask]
         n_test = df_test.shape[0]
         # feature engineering
-        X_test = self.input_vectorizer.transform(df_test["clean body"])
+        X_test = self.input_vectorizer.transform(df_test["clean_body"])
         # Prediction
         Y_test = self.classifier.predict(X_test)
         # Decoding
@@ -84,7 +84,7 @@ class SenderModel():
         # data loading
         df_eval = df_submission.ix[mids]
         # feature engineering
-        X_eval = self.input_vectorizer.transform(df_eval["clean body"])
+        X_eval = self.input_vectorizer.transform(df_eval["clean_body"])
         # Prediction
         Y_eval = self.classifier.predict(X_eval)
         # Decoding
