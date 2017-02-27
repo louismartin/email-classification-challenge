@@ -67,6 +67,13 @@ class VectorizerManager:
         self.recipients_vectorizer.fit(s)
         self.n_outputs = len(self.recipients_vectorizer.get_feature_names())
 
+    def vectorize_x_y(self, df):
+        X_body = self.vectorize_body(df["clean_body"])
+        X_sender = self.vectorize_sender(df["sender"])
+        X = np.concatenate((X_body, X_sender), axis=1)
+        Y = self.vectorize_recipients(df["recipients"])
+        return X, Y
+
     def vectorize_sender(self, s):
         X = self.sender_vectorizer.transform(s)
         if sp.issparse(X):
