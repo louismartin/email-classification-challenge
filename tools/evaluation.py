@@ -23,8 +23,10 @@ def top_emails(Y_pred, recipients_map, top=10):
             np.arange(best_pred_idx.shape[0])[:, None],
             sorted_ids
             ]
+    elif len(Y_pred.shape) > 1 and top >= Y_pred.shape[1]:
+        sorted_idx = np.argsort(-Y_pred, axis=1)
     else:
-        sorted_idx = np.argsort(-Y_pred)
+        sorted_idx = np.zeros((len(Y_pred), 1)).astype(int)
 
     # Map these indices to emails
     recipients_array = np.array(recipients_map)
