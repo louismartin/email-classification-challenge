@@ -4,12 +4,34 @@ from tools.evaluation import precision, top_emails
 class SenderModel():
     def __init__(self, df_emails, classifier, input_vectorizer,
                  output_vectorizer):
+        '''
+            Args:
+                - df_emails (pd dataframe): the dataframe to use for this
+                model. It needs "clean body" and "recipients" columns.
+                - classifier (object): the classifier (or regressor) you want
+                to use. It needs to have the following functions: fit, predict.
+                - input_vectorizer (object): an object that will vectorize the
+                input data given as the "clean body" column of the dataframe.
+                It needs to have the following functions: fit_transform,
+                transform.
+                - output_vectorizer (object): an object that will vectorize
+                the recipients given as the "recipients" column of the
+                dataframe. It needs to have the following functions:
+                fit_transform, get_feature_names.
+        '''
         self.df_emails = df_emails
         self.classifier = classifier
         self.input_vectorizer = input_vectorizer
         self.output_vectorizer = output_vectorizer
 
     def train(self, train_prop=1):
+        '''Trains the classifier after having vectorized input and output data.
+            Args:
+                - train_prop (float): the porportion of emails you want to keep
+                for this training.
+            Returns:
+                - self
+        '''
         # data loading and separation
         df_train = self.df_emails.sample(frac=train_prop)
         self.train_ids = list(df_train.index.values)
@@ -21,6 +43,14 @@ class SenderModel():
         return self
 
     def evaluate(self, train_prop=0.7):
+        '''Computes the precision at 10 for this model on a test set extracted
+        from the dataframe.
+            Args:
+                - train_prop (float): the proportion of emails used for the
+                training.
+            Returns:
+                - float: the precision at 10.
+        '''
         self.train(train_prop=train_prop)
         # data loading
         train_mask = self.df_emails.index.isin(self.train_ids)
@@ -43,6 +73,13 @@ class SenderModel():
         return preci
 
     def predict(self, mids, df_submission):
+        '''Assigns predicted recipients to a submission dataframe.
+            Args:
+                - mids (list of int): the indices in the dataframe of the
+                emails whose recipients you want to predict.
+                - df_submission (pd dataframe): the dataframe containing the
+                emails.
+        '''
         # data loading
         df_eval = df_submission.ix[mids]
         # feature engineering
