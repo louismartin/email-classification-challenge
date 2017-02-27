@@ -26,8 +26,10 @@ def top_emails(Y_pred, recipients_map, top=10):
     else:
         sorted_idx = np.argsort(-Y_pred)
 
-    # Map these indexes to emails
-    predictions = recipients_map[sorted_idx]
+    # Map these indices to emails
+    recipients_array = np.array(recipients_map)
+    predictions = np.apply_along_axis(
+        recipients_array.__getitem__, 1, sorted_idx)
     return predictions
 
 
