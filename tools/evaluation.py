@@ -31,7 +31,7 @@ def top_emails(Y_pred, recipients_map, top=10):
     return predictions
 
 
-def precision(prediction, ground_truth):
+def get_precision(prediction, ground_truth):
     '''Computes the precision at 10 (or len(prediction)).
         Arguments:
             - ground_truth (str or list): the true recipients.
@@ -69,18 +69,18 @@ def evaluate(pred_recipients, true_recipients):
     assert len(pred_recipients) == len(true_recipients)
     score = 0
     for pred, true in zip(pred_recipients, true_recipients):
-        score += precision(pred, true)
+        score += get_precision(pred, true)
     score /= len(pred_recipients)
     return score
 
 
-def test_precision():
+def test_get_precision():
     # Test 1
     true_recipients = ["true"]
     pred_recipients = ["false"]*10
     # First prediction is true
     pred_recipients[0] = "true"
-    score = precision(pred_recipients, true_recipients)
+    score = get_precision(pred_recipients, true_recipients)
     assert score == 1
 
     # Test 2
@@ -88,7 +88,7 @@ def test_precision():
     pred_recipients = ["false"]*10
     # Seventh prediction is true
     pred_recipients[6] = "true"
-    score = precision(pred_recipients, true_recipients)
+    score = get_precision(pred_recipients, true_recipients)
     assert score == (1/7)/min(1, 10)
 
     # Test 3
@@ -97,7 +97,7 @@ def test_precision():
     # First and third predictions are true
     pred_recipients[0] = "true1"
     pred_recipients[2] = "true2"
-    score = precision(pred_recipients, true_recipients)
+    score = get_precision(pred_recipients, true_recipients)
     assert score == (1/1 + 2/3)/min(3, 10)
 
     # Test 4
@@ -106,7 +106,7 @@ def test_precision():
     # First and second predictions are true
     pred_recipients[0] = "true1"
     pred_recipients[1] = "true3"
-    score = precision(pred_recipients, true_recipients)
+    score = get_precision(pred_recipients, true_recipients)
     assert score == (1/1 + 2/2)/min(3, 10)
 
     # Test 5
@@ -115,6 +115,6 @@ def test_precision():
     # Ninth and tenth predictions are true
     pred_recipients[8] = "true3"
     pred_recipients[9] = "true2"
-    score = precision(pred_recipients, true_recipients)
+    score = get_precision(pred_recipients, true_recipients)
     assert score == (1/9 + 2/10)/min(3, 10)
-test_precision()
+test_get_precision()
