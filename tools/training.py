@@ -38,7 +38,7 @@ class EvaluateAndSave(Callback):
         Y_pred = self.model.predict(self.X_test, batch_size=self.batch_size)
         predictions = top_emails(Y_pred, self.recipients_map)
         precision = evaluate(predictions, self.ground_truth)
-        print("*** Precision: {prec:.3f} ***\n".format(prec=precision))
+        print("\n*** Precision: {prec:.3f} ***\n".format(prec=precision))
         # Save everything
         self.logs["precision"].append(precision)
         if precision == max(self.logs["precision"]):
