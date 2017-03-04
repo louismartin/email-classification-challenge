@@ -39,22 +39,22 @@ def precision(prediction, ground_truth):
         Output:
             - float: the precision
     '''
+    # If we got strings in input, convert to list
     if type(ground_truth) == str:
-        ground_truth_list = ground_truth.split()
-    else:
-        ground_truth_list = ground_truth
-    n_truth = len(ground_truth_list)
+        ground_truth = ground_truth.split()
     if type(prediction) == str:
-        pred_list = prediction.split()
-    else:
-        pred_list = prediction
-    n_pred = len(pred_list)
+        prediction = prediction.split()
+    # First remove None values
+    ground_truth = [rec for rec in ground_truth if rec is not None]
+    n_truth = len(ground_truth)
+    n_pred = len(prediction)
     # we identify which predictions are correct
-    pred_truth = [int(rec in ground_truth_list) for rec in pred_list]
+    pred_truth = [int(rec in ground_truth) for rec in prediction]
     truth_ids = [i for i, b in enumerate(pred_truth) if b]
     # we compute the precision at each rank
     precision_at_rank = np.cumsum(pred_truth) / (np.arange(n_pred)+1)
-    return np.sum(precision_at_rank[truth_ids]) / np.min([n_truth, n_pred])
+    precision = np.sum(precision_at_rank[truth_ids]) / np.min([n_truth, n_pred])
+    return precision
 
 
 def evaluate(pred_recipients, true_recipients):
