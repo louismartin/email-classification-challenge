@@ -1,4 +1,4 @@
-from tools.evaluation import precision, top_emails
+from tools.evaluation import top_emails, evaluate
 
 
 class SenderModel():
@@ -56,7 +56,6 @@ class SenderModel():
         # data loading
         train_mask = self.df_emails.index.isin(self.train_ids)
         df_test = self.df_emails[~train_mask]
-        n_test = df_test.shape[0]
         # feature engineering
         X_test = self.input_vectorizer.transform(df_test["clean_body"])
         # Prediction
@@ -64,14 +63,9 @@ class SenderModel():
         # Decoding
         recipients_map = self.output_vectorizer.get_feature_names()
         predicted_recipients = top_emails(Y_test, recipients_map)
-        preci = 0
-        for index_test, row_test in df_test.iterrows():
-            i = df_test.index.get_loc(index_test)
-            rec_pred = " ".join(predicted_recipients[i, :])
-            preci += precision(rec_pred, row_test["recipients"])
-
-        preci /= n_test
-        return preci
+        ground_truth = df_test["recipients"].str.split(expand=True).as_matrix()
+        prec = evaluate(predicted_recipients, ground_truth)
+        return prec
 
     def predict(self, mids, df_submission):
         '''Assigns predicted recipients to a submission dataframe.
