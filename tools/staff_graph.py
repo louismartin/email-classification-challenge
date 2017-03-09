@@ -1,9 +1,8 @@
 import community
+from matplotlib import pylab as pl
 import networkx as nx
 import numpy as np
 import pandas as pd
-
-from matplotlib import pylab as pl
 
 
 def construct_graph(df_emails):
