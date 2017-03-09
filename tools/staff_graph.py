@@ -39,7 +39,7 @@ def compute_teams(G):
             - G: the email graph
         Ourput:
             dictionary with to elements:
-                - values (list): team assignment for nodes in G.
+                - teams (list): team assignment for nodes in G.
                 - n_classes (int): number of clusters
     '''
     parts = community.best_partition(G)
@@ -49,7 +49,7 @@ def compute_teams(G):
     n_clusters = len(set(teams.values()))
     output_dict = {}
     output_dict["n_clusters"] = n_clusters
-    output_dict["values"] = values
+    output_dict["teams"] = teams
     return output_dict
 
 
