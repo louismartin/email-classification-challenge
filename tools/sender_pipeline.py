@@ -84,7 +84,7 @@ class SenderModel():
         # Decoding
         recipients_map = self.output_vectorizer.get_feature_names()
         predicted_recipients = top_emails(Y_eval, recipients_map)
-        for index_eval, row_eval in df_submission.iterrows():
-            i = df_submission.index.get_loc(index_eval)
+        for index_eval, row_eval in df_eval.iterrows():
+            i = df_eval.index.get_loc(index_eval)
             rec_pred = " ".join(predicted_recipients[i, :])
             df_submission.set_value(index_eval, "recipients", rec_pred)
