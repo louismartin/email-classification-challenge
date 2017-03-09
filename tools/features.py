@@ -66,10 +66,14 @@ class VectorizerManager:
         self.recipients_vectorizer.fit(s)
         self.n_outputs = len(self.recipients_vectorizer.get_feature_names())
 
-    def vectorize_x_y(self, df):
+    def vectorize_x(self, df):
         X_body = self.vectorize_body(df["clean_body"])
         X_sender = self.vectorize_sender(df["sender"])
         X = np.concatenate((X_body, X_sender), axis=1)
+        return X
+
+    def vectorize_x_y(self, df):
+        X = self.vectorize_x(df)
         Y = self.vectorize_recipients(df["recipients"])
         return X, Y
 
