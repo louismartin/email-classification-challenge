@@ -51,6 +51,11 @@ class VectorizerManager:
         n_features = self.n_senders + self.n_words
         return n_features
 
+    def get_feature_names(self):
+        feature_names = (self.body_vectorizer.get_feature_names() +
+                         self.sender_vectorizer.get_feature_names())
+        return feature_names
+
     def fit_sender(self, s):
         print("Fitting senders ...")
         self.sender_vectorizer.fit(s)
