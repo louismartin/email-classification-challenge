@@ -11,7 +11,7 @@ def construct_graph(df_emails):
         between them.
         Arguments:
             - df_emails (pd dataframe): the pd dataframe containing the emails
-        Ourput:
+        Output:
             - G_connected (nx graph): biggest connected component of the graph
     '''
     G = nx.Graph()
@@ -36,8 +36,8 @@ def compute_teams(G):
     '''Split G into cluster according to Louvain algorithm
         Arguments:
             - G: the email graph
-        Ourput:
-            dictionary with to elements:
+        Output:
+            dictionary with two elements:
                 - teams (list): team assignment for nodes in G.
                 - n_classes (int): number of clusters
     '''
@@ -59,7 +59,7 @@ def assign_team(teams, n_clusters, email):
             - teams: assignmenet from Louvain algo.
             - n_clusters: number of clusters in the Louvain assignment
             - email (str): email address (one of the nodes of G)
-        Ourput:
+        Output:
             - assignment (np.array): team assigned.
     '''
     assignment = np.zeros(n_clusters)
@@ -72,7 +72,7 @@ def compute_summary_graph(G, n_clusters, parts):
         Arguments:
             - G: graph where each node is assigned to a team in 'parts'.
             - n_clusters: number of clusters in the Louvain assignment
-        Ourput:
+        Output:
             - G_community (nx graph): team assigned.
     '''
     G_community = nx.Graph()
