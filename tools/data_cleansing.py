@@ -10,7 +10,7 @@ stopwords = set(stopwords.words("english"))
 english_words = set(words.words())
 
 
-def remove_after_indicator(text, indicator):
+def remove_after_indicator(text, indicator, min_words=10):
     '''Removes everything in text after indicator if found. If not found, leaves
     text as is.
         Arguments:
@@ -20,9 +20,15 @@ def remove_after_indicator(text, indicator):
         Output:
             - str: the shortened text.
     '''
-    indic_match = re.search(indicator, text)
-    if indic_match:
-        simple_text = text[:indic_match.span(0)[0]]
+    indic_matches = re.finditer(indicator, text)
+    if indic_matches:
+        simple_text = False
+        for match in indic_matches:
+            position = match.span(0)[0]
+            if len(text[:position].split()) > min_words:
+                simple_text = text[:position]
+        if not simple_text:
+            simple_text = text
     else:
         simple_text = text
     return simple_text
