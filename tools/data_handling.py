@@ -36,20 +36,29 @@ def load_email_senders(set_type="training"):
     return pd.read_csv(training_set_path)
 
 
-@save_and_reload_df
-def enrich_emails():
+def enrich_emails(set_type="training"):
     '''Adds the sender column to the emails dataframe and returns it.
         Output:
             - pd dataframe: the emails enriched. The columns are [mid, date,
             body, recipients, sender]
     '''
-    df_emails = load_emails()
-    df_email_senders = load_email_senders()
+    df_emails = load_emails(set_type=set_type)
+    df_email_senders = load_email_senders(set_type=set_type)
     df_emails["sender"] = ""
     for index, row in df_email_senders.iterrows():
         for mid in row["mids"].split():
             df_emails.set_value(int(mid), "sender", row["sender"])
     return df_emails
+
+
+@save_and_reload_df
+def enrich_emails_train():
+    return enrich_emails(set_type="training")
+
+
+@save_and_reload_df
+def enrich_emails_test():
+    return enrich_emails(set_type="test")
 
 
 def unique_recipients(df_emails, min_rec=1):
