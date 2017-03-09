@@ -11,9 +11,10 @@ def save_submission(df_submission, algo="Random Forest", member="Zac"):
         Output:
             - str: the name of the file in which the dataframe is saved.
     '''
-    date = str(time.time())
+    date = str(int(time.time()))
+    algo = algo.replace(" ", "_")
     submission_name = "_".join([algo, member, date])
-    submission_name = "{}.csv".format(submission_name)
+    submission_name = "{}.csv".format(submission_name).lower()
     df_submission["recipients"].to_csv(op.join("submissions", submission_name),
                                        header=True)
     return submission_name
