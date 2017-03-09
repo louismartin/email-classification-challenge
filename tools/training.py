@@ -5,16 +5,16 @@ import time
 
 from keras.callbacks import Callback
 import matplotlib.pyplot as plt
+import numpy as np
 
 from tools.evaluation import top_emails, evaluate
 
 
-def data_generator(df_train, vectorizer, batch_size=32):
+def data_generator(df_train, vm, batch_size=32):
     """Online training data generator"""
     while True:
         df_batch = df_train.sample(n=batch_size)
-        X_batch = vectorizer.vectorize_input(df_batch["clean_body"])
-        Y_batch = vectorizer.vectorize_output(df_batch["recipients"])
+        X_batch, Y_batch = vm.vectorize_x_y(df_batch)
         yield (X_batch, Y_batch)
 
 
@@ -38,7 +38,7 @@ class EvaluateAndSave(Callback):
         Y_pred = self.model.predict(self.X_test, batch_size=self.batch_size)
         predictions = top_emails(Y_pred, self.recipients_map)
         precision = evaluate(predictions, self.ground_truth)
-        print("*** Precision: {prec:.3f} ***\n".format(prec=precision))
+        print("\n*** Precision: {prec:.3f} ***\n".format(prec=precision))
         # Save everything
         self.logs["precision"].append(precision)
         if precision == max(self.logs["precision"]):

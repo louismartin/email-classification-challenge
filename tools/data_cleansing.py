@@ -83,6 +83,13 @@ def remove_non_english_words(text, except_words=None):
     return clean_text
 
 
+def remove_non_emails(text):
+    '''Remove all emails from text which don't contain @'''
+    emails = text.split()
+    kept_emails = [email for email in emails if ('@' in email)]
+    return " ".join(kept_emails)
+
+
 def stem_words(text, except_words):
     words = text.split()
     clean_text = " ".join([stem(word, except_words) for word in words])
@@ -91,9 +98,9 @@ def stem_words(text, except_words):
 
 def clean(text, except_words=None, only_english=False):
     ''' Clean a string using several methods '''
-    text = text.lower()
     text = remove_after_indicator(text, "Original Message")
     text = remove_after_indicator(text, "Forwarded by")
+    text = text.lower()
     text = remove_punctuation(text)
     text = remove_numbers(text)
     text = remove_stopwords(text)
@@ -101,31 +108,3 @@ def clean(text, except_words=None, only_english=False):
         text = remove_non_english_words(text, except_words)
     text = stem_words(text, except_words)
     return text
-
-
-@save_and_reload_df
-def get_clean_df_train(ratio=0.9):
-    """Quick'n'Dirty method"""
-    df_emails = enrich_emails()
-
-    n_train = int(ratio * df_emails.shape[0])
-    df_train = df_emails.sample(n=n_train, random_state=0)
-
-    recipients = unique_recipients(df_train)
-    names = address_book(recipients)
-    df_train["clean body"] = clean(df_train["body"], except_words=names)
-    return df_train
-
-
-@save_and_reload_df
-def get_clean_df_test():
-    """Quick'n'Dirty method"""
-    df_emails = enrich_emails()
-
-    df_train = get_clean_df_train()
-    df_test = df_emails.drop(df_train.index)
-
-    recipients = unique_recipients(df_train)
-    names = address_book(recipients)
-    df_test["clean body"] = clean(df_test["body"], except_words=names)
-    return df_test

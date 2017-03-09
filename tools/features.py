@@ -1,7 +1,6 @@
 from collections import Counter
 
 import numpy as np
-import pandas as pd
 import scipy.sparse as sp
 
 from sklearn.base import BaseEstimator
@@ -38,60 +37,89 @@ def lemmatize_tokenizer(s):
     return [lemmatize(word) for word in s.split(" ")]
 
 
-class Vectorizer:
-    def __init__(self, input_bow, output_bow):
-        self.input_bow = input_bow
-        self.output_bow = output_bow
+class VectorizerManager:
+    def __init__(self,
+                 sender_vectorizer,
+                 body_vectorizer,
+                 recipients_vectorizer):
+        self.sender_vectorizer = sender_vectorizer
+        self.body_vectorizer = body_vectorizer
+        self.recipients_vectorizer = recipients_vectorizer
 
-    def fit_input(self, s_clean_body):
-        print("Fitting input ...")
-        self.input_bow.fit(s_clean_body)
-        self.n_features = len(self.input_bow.get_feature_names())
+    @property
+    def n_features(self):
+        n_features = self.n_senders + self.n_words
+        return n_features
 
-    def fit_output(self, s_recipients):
-        print("Fitting output ...")
-        self.output_bow.fit(s_recipients)
-        self.n_outputs = len(self.output_bow.get_feature_names())
+    def fit_sender(self, s):
+        print("Fitting senders ...")
+        self.sender_vectorizer.fit(s)
+        self.n_senders = len(self.sender_vectorizer.get_feature_names())
 
-    def vectorize_input(self, s_clean_body):
-        X = self.input_bow.transform(s_clean_body)
+    def fit_body(self, s):
+        print("Fitting bodies ...")
+        self.body_vectorizer.fit(s)
+        self.n_words = len(self.body_vectorizer.get_feature_names())
+
+    def fit_recipients(self, s):
+        print("Fitting Recipients ...")
+        self.recipients_vectorizer.fit(s)
+        self.n_outputs = len(self.recipients_vectorizer.get_feature_names())
+
+    def vectorize_x_y(self, df):
+        X_body = self.vectorize_body(df["clean_body"])
+        X_sender = self.vectorize_sender(df["sender"])
+        X = np.concatenate((X_body, X_sender), axis=1)
+        Y = self.vectorize_recipients(df["recipients"])
+        return X, Y
+
+    def vectorize_sender(self, s):
+        X = self.sender_vectorizer.transform(s)
         if sp.issparse(X):
             X = X.toarray()
         return X
 
-    def vectorize_output(self, s_recipients):
-        Y = self.output_bow.transform(s_recipients)
+    def vectorize_body(self, s):
+        X = self.body_vectorizer.transform(s)
+        if sp.issparse(X):
+            X = X.toarray()
+        return X
+
+    def vectorize_recipients(self, s):
+        Y = self.recipients_vectorizer.transform(s)
         if sp.issparse(Y):
             Y = Y.toarray()
         return Y
 
 
 # Code inspired from sklearn.feature_extraction.text.CountVectorizer
-class GoWVectorizer(BaseEstimator):
-    def __init__(self, window=5, min_df=1, max_features=None):
-        self.window = window
+class AbstractFastVectorizer(BaseEstimator):
+    def __init__(self, min_df=1, max_features=None, vocabulary=None):
         self.min_df = min_df
         self.max_features = max_features
+        self.vocabulary = vocabulary
 
     def _make_vocabulary(self, raw_documents):
         """Create a vocabulary from the documents.
         The vocabulary is a dictionary with the words as keys and their
         associated index as value, e.g. {"foo": 0, "bar": 1, "baz": 2, ...}.
         """
-        counter = Counter()
-        counter.update((" ".join(raw_documents)).split())
-        # List of tuples (word, count) from most frequent to less frequent
-        word_count = counter.most_common(self.max_features)
-        words_kept = [word for (word, count)
-                      in word_count if count > self.min_df]
-        self.vocabulary_ = {word: i for i, word in enumerate(words_kept)}
-        self.n_features = len(words_kept)
-        self.feature_names = words_kept
+        vocabulary = self.vocabulary
+        if not vocabulary:
+            counter = Counter()
+            counter.update((" ".join(raw_documents)).split())
+            # List of tuples (word, count) from most frequent to less frequent
+            word_count = counter.most_common(self.max_features)
+            vocabulary = [word for (word, count)
+                          in word_count if count >= self.min_df]
+        self.vocabulary_ = {word: i for i, word in enumerate(vocabulary)}
+        self.n_features = len(vocabulary)
+        self.feature_names = vocabulary
 
     def get_feature_names(self):
         return self.feature_names
 
-    def fit(self, raw_documents, y=None):
+    def fit(self, raw_documents):
         """Learn a vocabulary dictionary of all tokens in the raw documents.
         Parameters
         ----------
@@ -120,7 +148,7 @@ class GoWVectorizer(BaseEstimator):
         n_samples = len(raw_documents)
         X = np.zeros((n_samples, self.n_features))
         for i, doc in enumerate(raw_documents):
-            X[i] = self._gow_vectorize(doc)
+            X[i] = self._vectorize(doc)
         return X
 
     def fit_transform(self, raw_documents, y=None):
@@ -138,6 +166,45 @@ class GoWVectorizer(BaseEstimator):
         self.fit(raw_documents)
         X = self.transform(raw_documents)
         return X
+
+    def most_important_words(self, text):
+        """ Returns a comprehensive list of tuples (word, count) sorted
+        in decreasing order of importance.
+        The count is the graph of words measure of number of inbound edges."""
+        counts = self._vectorize(text)
+        words = self.get_feature_names()
+        results = [(x, y) for (y, x) in sorted(zip(counts, words))][::-1]
+        return results
+
+
+class FastCountVectorizer(AbstractFastVectorizer):
+    def __init__(self, min_df=1, max_features=None, vocabulary=None):
+        super(FastCountVectorizer, self).__init__(min_df=min_df,
+                                                  max_features=max_features,
+                                                  vocabulary=vocabulary)
+        # Set method used to vectorize a single string
+        self._vectorize = self._bow_vectorize
+
+    def _bow_vectorize(self, text):
+        # Vector representation of input text
+        x = np.zeros(self.n_features)
+        vocabulary = self.vocabulary_
+        words = text.split()
+        for word in words:
+            if word in vocabulary:
+                index = vocabulary[word]
+                x[index] += 1
+        return x
+
+
+class GoWVectorizer(AbstractFastVectorizer):
+    def __init__(self, window=5, min_df=1, max_features=None, vocabulary=None):
+        super(GoWVectorizer, self).__init__(min_df=min_df,
+                                            max_features=max_features,
+                                            vocabulary=vocabulary)
+        self.window = window
+        # Set method used to vectorize a single string
+        self._vectorize = self._gow_vectorize
 
     def _gow_vectorize(self, text):
         """ Implement the graph of word (GoW) method on the input string.
@@ -175,11 +242,46 @@ class GoWVectorizer(BaseEstimator):
                 x[index] = inbound_edges/self.window
         return x
 
-    def most_important_words(self, text):
-        """ Returns a comprehensive list of tuples (word, count) sorted
-        in decreasing order of importance.
-        The count is the graph of words measure of number of inbound edges."""
-        counts = self._graph_of_words(text)
-        words = self.get_feature_names()
-        results = [(x, y) for (y, x) in sorted(zip(counts, words))][::-1]
-        return results
+
+class TwidfVectorizer(GoWVectorizer):
+    def __init__(self, window=5, min_df=1, max_features=None, vocabulary=None):
+        super(TwidfVectorizer, self).__init__(window=window,
+                                              min_df=min_df,
+                                              max_features=max_features,
+                                              vocabulary=vocabulary)
+        # Set method used to vectorize a single string
+        self._vectorize = self._twidf_vectorize
+
+    def _compute_idf(self, raw_documents):
+        n_documents = len(raw_documents)
+        documents = [set(doc.split()) for doc in raw_documents]
+        self.idf = {}
+        for word in self.get_feature_names():
+            df = sum([(word in doc) for doc in documents])
+            self.idf[word] = np.log(n_documents/df)
+
+    def fit(self, raw_documents):
+        """Learn a vocabulary dictionary of all tokens in the raw documents.
+        Parameters
+        ----------
+        raw_documents : iterable
+            An iterable which yields either str, unicode or file objects.
+        Returns
+        -------
+        self
+        """
+        self._make_vocabulary(raw_documents)
+        self._compute_idf(raw_documents)
+        return self
+
+    def _twidf_vectorize(self, text):
+        x = super(TwidfVectorizer, self)._gow_vectorize(text)
+        vocabulary = self.vocabulary_
+        words = set(text.split())
+        for word in words:
+            if word in vocabulary:
+                index = vocabulary[word]
+                idf = self.idf[word]
+                tw = x[index]
+                x[index] = tw * idf
+        return x
