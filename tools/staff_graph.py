@@ -100,3 +100,4 @@ def compute_summary_graph(G, n_clusters, parts):
     for node in G_community.nodes():
         relabeling_dict[node] = int(G_community[node][node]['weight'])
     G_community = nx.relabel_nodes(G_community, relabeling_dict)
+    return G_community
