@@ -5,7 +5,6 @@ import time
 
 from keras.callbacks import Callback
 import matplotlib.pyplot as plt
-import numpy as np
 
 from tools.evaluation import top_emails, evaluate
 
@@ -49,7 +48,7 @@ class EvaluateAndSave(Callback):
 
             # Save new model
             path = op.join(self.save_folder,
-                           "nnet_{prec:.2f}.hdf5".format(prec=precision))
+                           "nnet_{prec:.3f}.hdf5".format(prec=precision))
             self.model.save_weights(path)
 
         # Save and plot precisions
