@@ -8,8 +8,8 @@ nltk==3.2.2
 scikit-learn==0.18.1
 scipy==0.18.1
 Keras==1.2.1
-tensorflow==0.12.0
 h5py==2.6.0
 networkx==1.11
 flake8==3.3.0
 tqdm==4.11.2
+tensorflow==0.12.0
