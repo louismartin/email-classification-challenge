@@ -101,7 +101,8 @@ def compute_summary_graph(G, n_clusters, parts):
     G_community = nx.relabel_nodes(G_community, relabeling_dict)
     return G_community
 
-    def add_team_info(sender, predicted_recipients, teams, n_clusters):
+
+def add_team_info(sender, predicted_recipients, teams, n_clusters):
         ''' Reorder the ten email predicted with defined from heuristic
         Arguments:
             - sender (str): email from the sender
@@ -113,11 +114,13 @@ def compute_summary_graph(G, n_clusters, parts):
             - new_prediction (np.array): team updated prediction.
         '''
         sender_team = teams[sender]
-        recipients_teams = np.zeros_like(predicted_recipients)
+        recipients_teams = np.zeros((predicted_recipients.shape[0],
+                                    predicted_recipients.shape[1]),
+                                    dtype='int64')
         new_prediction = np.zeros_like(predicted_recipients)
         for raw in range(predicted_recipients.shape[0]):
             current_rank = 0
-            in_new_pred = zeros(predicted_recipients.shape[1])
+            in_new_pred = np.zeros(predicted_recipients.shape[1])
             for email_index in range(predicted_recipients.shape[1]):
                 if predicted_recipients[raw, email_index] in teams.keys():
                     recipients_teams[raw, email_index] = teams[
@@ -130,7 +133,7 @@ def compute_summary_graph(G, n_clusters, parts):
                         raw, email_index]
                     current_rank += 1
                     in_new_pred[email_index] = 1
-            counts = np.bincount(recipients_teams)
+            counts = np.bincount(recipients_teams[raw, :])
             max_team = np.argmax(counts)
             # put all people from max_team second
             if max_team != 0:
@@ -139,6 +142,7 @@ def compute_summary_graph(G, n_clusters, parts):
                         new_prediction[raw, current_rank] =\
                                 predicted_recipients[raw, email_index]
                         current_rank += 1
+                        in_new_pred[email_index] = 1
             for email_index in range(predicted_recipients.shape[1]):
                 if in_new_pred[email_index] == 0:
                     new_prediction[raw, current_rank] = predicted_recipients[
@@ -148,5 +152,6 @@ def compute_summary_graph(G, n_clusters, parts):
 
             # sanity_check
             if np.sum(in_new_pred) != predicted_recipients.shape[1]:
+                # print(np.sum(in_new_pred))
                 print("warning: not all emails where mapped")
         return new_prediction
