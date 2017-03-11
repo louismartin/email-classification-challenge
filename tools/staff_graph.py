@@ -100,3 +100,53 @@ def compute_summary_graph(G, n_clusters, parts):
         relabeling_dict[node] = int(G_community[node][node]['weight'])
     G_community = nx.relabel_nodes(G_community, relabeling_dict)
     return G_community
+
+    def add_team_info(sender, predicted_recipients, teams, n_clusters):
+        ''' Reorder the ten email predicted with defined from heuristic
+        Arguments:
+            - sender (str): email from the sender
+            - predicted_recipients (np.array): Top predicted emails (strings)
+                                   shape = n_samples, top
+            - teams: dict of teams for all the email adresses
+            - n_clusters: number of clusters in the Louvain assignment
+        Output:
+            - new_prediction (np.array): team updated prediction.
+        '''
+        sender_team = teams[sender]
+        recipients_teams = np.zeros_like(predicted_recipients)
+        new_prediction = np.zeros_like(predicted_recipients)
+        for raw in range(predicted_recipients.shape[0]):
+            current_rank = 0
+            in_new_pred = zeros(predicted_recipients.shape[1])
+            for email_index in range(predicted_recipients.shape[1]):
+                if predicted_recipients[raw, email_index] in teams.keys():
+                    recipients_teams[raw, email_index] = teams[
+                        predicted_recipients[raw, email_index]]
+                else:
+                    recipients_teams[raw, email_index] = 0
+                # people in the same team than sender are First
+                if recipients_teams[raw, email_index] == sender_team:
+                    new_prediction[raw, current_rank] = predicted_recipients[
+                        raw, email_index]
+                    current_rank += 1
+                    in_new_pred[email_index] = 1
+            counts = np.bincount(recipients_teams)
+            max_team = np.argmax(counts)
+            # put all people from max_team second
+            if max_team != 0:
+                for email_index in range(predicted_recipients.shape[1]):
+                    if recipients_teams[raw, email_index] == max_team:
+                        new_prediction[raw, current_rank] =\
+                                predicted_recipients[raw, email_index]
+                        current_rank += 1
+            for email_index in range(predicted_recipients.shape[1]):
+                if in_new_pred[email_index] == 0:
+                    new_prediction[raw, current_rank] = predicted_recipients[
+                        raw, email_index]
+                    current_rank += 1
+                    in_new_pred[email_index] = 1
+
+            # sanity_check
+            if np.sum(in_new_pred) != predicted_recipients.shape[1]:
+                print("warning: not all emails where mapped")
+        return new_prediction

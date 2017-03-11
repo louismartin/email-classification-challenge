@@ -3,9 +3,11 @@ from collections import Counter
 import numpy as np
 import scipy.sparse as sp
 
-from sklearn.base import BaseEstimator
 from nltk.stem.lancaster import LancasterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
+from sklearn.base import BaseEstimator
+from tools.staff_graph import construct_graph, compute_teams, assign_team
+
 
 stemmer = LancasterStemmer()
 lemmatizer = WordNetLemmatizer()

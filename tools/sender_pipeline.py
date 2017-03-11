@@ -1,4 +1,5 @@
 from tools.evaluation import top_emails, evaluate
+from tools.staff_graph import add_team_info
 
 
 class SenderModel():
@@ -63,6 +64,7 @@ class SenderModel():
         # Decoding
         recipients_map = self.output_vectorizer.get_feature_names()
         predicted_recipients = top_emails(Y_test, recipients_map)
+        # predicted_recipients =
         ground_truth = df_test["recipients"].str.split(expand=True).as_matrix()
         prec = evaluate(predicted_recipients, ground_truth)
         return prec
