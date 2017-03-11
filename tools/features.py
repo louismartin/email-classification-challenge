@@ -285,3 +285,35 @@ class TwidfVectorizer(GoWVectorizer):
                 tw = x[index]
                 x[index] = tw * idf
         return x
+
+
+class TeamVectorizer:
+
+    def fit(self, df_emails):
+        G_connected = construct_graph(df_emails)
+        self.G_connected = G_connected
+        for node in G_connected.nodes():
+            if G_connected.degree(node) <= 3 and\
+                    G_connected.degree(node, weight='weight') <= 3.1:
+                G_connected.remove_node(node)
+        output_dict = compute_teams(self.G_connected)
+        self.n_features = output_dict["n_clusters"]
+        self.teams = output_dict["teams"]
+        self.parts = output_dict["parts"]
+        return self
+
+    def transform(self, raw_documents):
+        """Transform team info to team-info matrix.
+        ----------
+        raw_documents : iterable
+            An iterable which yields either str, unicode or file objects.
+        Returns
+        -------
+        X : matrix, [n_samples, n_features]
+            Document-term matrix.
+        """
+        n_samples = len(raw_documents)
+        X = np.zeros((n_samples, self.n_features))
+        for i, doc in enumerate(raw_documents):
+            X[i] = assign_team(self.teams, self.n_features, doc)
+        return X
