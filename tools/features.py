@@ -37,6 +37,13 @@ def lemmatize_tokenizer(s):
     return [lemmatize(word) for word in s.split(" ")]
 
 
+def normalized_sent_frequency(Y):
+    '''Y being the binary matrix of size n_emails x n_recipients, containing in
+    Y[i, j] 1 if j was a recipient of mail j, 0 otherwise.
+    '''
+    return Y.sum(axis=0) / sum(sum(Y))
+
+
 class VectorizerManager:
     def __init__(self,
                  sender_vectorizer,

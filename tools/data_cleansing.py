@@ -27,6 +27,7 @@ def remove_after_indicator(text, indicator, min_words=10):
             position = match.span(0)[0]
             if len(text[:position].split()) > min_words:
                 simple_text = text[:position]
+                break
         if not simple_text:
             simple_text = text
     else:
@@ -54,7 +55,7 @@ def remove_numbers(text):
     return re.sub("\d+", " ", text)
 
 
-def remove_stopwords(text):
+def remove_stopwords(text, important_stopwords={}, additional_stopwords={}):
     '''Remove all stopwords from nltk from a string.
         Arguments:
             - text (str): the string from which to remove stopwords
@@ -62,8 +63,11 @@ def remove_stopwords(text):
             - clean_text (str): the string without the stopwords
     '''
     words = text.split(" ")
-    clean_words = [word for word in words
-                   if word not in stopwords and len(word) > 0]
+    clean_words = [
+        word for word in words
+        if word not in stopwords.union(additional_stopwords) and
+        len(word) > 0 or
+        word in set(important_stopwords)]
 
     clean_text = " ".join(clean_words)
     return clean_text
@@ -102,14 +106,18 @@ def stem_words(text, except_words):
     return clean_text
 
 
-def clean(text, except_words=None, only_english=False):
+def clean(
+    text,
+    except_words=None,
+    only_english=False, important_stopwords={}, additional_stopwords={}
+):
     ''' Clean a string using several methods '''
     text = remove_after_indicator(text, "Original Message")
     text = remove_after_indicator(text, "Forwarded by")
     text = text.lower()
     text = remove_punctuation(text)
     text = remove_numbers(text)
-    text = remove_stopwords(text)
+    text = remove_stopwords(text, important_stopwords, additional_stopwords)
     if only_english:
         text = remove_non_english_words(text, except_words)
     text = stem_words(text, except_words)
