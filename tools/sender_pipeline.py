@@ -44,12 +44,13 @@ class SenderModel():
         self.classifier.fit(X_train, Y_train.toarray())
         return self
 
-    def evaluate(self, train_prop=0.7, random_state=None):
+    def evaluate(self, team_vectorizer, train_prop=0.7, random_state=None):
         '''Computes the precision at 10 for this model on a test set extracted
         from the dataframe.
             Args:
                 - train_prop (float): the proportion of emails used for the
                 training.
+                - team_vectorizer: a instance of the dedicated class
             Returns:
                 - float: the precision at 10.
         '''
@@ -64,7 +65,12 @@ class SenderModel():
         # Decoding
         recipients_map = self.output_vectorizer.get_feature_names()
         predicted_recipients = top_emails(Y_test, recipients_map)
-        # predicted_recipients =
+        predicted_recipients =\
+            add_team_info(df_test["sender"].iloc[0],
+                          predicted_recipients=predicted_recipients,
+                          teams=team_vectorizer.teams,
+                          n_clusters=team_vectorizer.n_features
+                          )
         ground_truth = df_test["recipients"].str.split(expand=True).as_matrix()
         prec = evaluate(predicted_recipients, ground_truth)
         return prec

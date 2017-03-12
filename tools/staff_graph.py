@@ -40,6 +40,7 @@ def compute_teams(G):
             dictionary with two elements:
                 - teams (list): team assignment for nodes in G.
                 - n_classes (int): number of clusters
+                - parts: output of best_partition
     '''
     parts = community.best_partition(G)
     teams = {}
@@ -72,6 +73,7 @@ def compute_summary_graph(G, n_clusters, parts):
         Arguments:
             - G: graph where each node is assigned to a team in 'parts'.
             - n_clusters: number of clusters in the Louvain assignment
+            - parts:
         Output:
             - G_community (nx graph): team assigned.
     '''
@@ -113,7 +115,10 @@ def add_team_info(sender, predicted_recipients, teams, n_clusters):
         Output:
             - new_prediction (np.array): team updated prediction.
         '''
-        sender_team = teams[sender]
+        if sender in teams.keys():
+            sender_team = teams[sender]
+        else:
+            sender_team = 0
         recipients_teams = np.zeros((predicted_recipients.shape[0],
                                     predicted_recipients.shape[1]),
                                     dtype='int64')
@@ -138,15 +143,16 @@ def add_team_info(sender, predicted_recipients, teams, n_clusters):
             # put all people from max_team second
             if max_team != 0:
                 for email_index in range(predicted_recipients.shape[1]):
-                    if recipients_teams[raw, email_index] == max_team:
+                    if recipients_teams[raw, email_index] == max_team and \
+                                                in_new_pred[email_index] == 0:
                         new_prediction[raw, current_rank] =\
                                 predicted_recipients[raw, email_index]
                         current_rank += 1
                         in_new_pred[email_index] = 1
             for email_index in range(predicted_recipients.shape[1]):
                 if in_new_pred[email_index] == 0:
-                    new_prediction[raw, current_rank] = predicted_recipients[
-                        raw, email_index]
+                    recipient = predicted_recipients[raw, email_index]
+                    new_prediction[raw, current_rank] = recipient
                     current_rank += 1
                     in_new_pred[email_index] = 1
 
