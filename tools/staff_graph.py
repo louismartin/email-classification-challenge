@@ -63,9 +63,12 @@ def assign_team(teams, n_clusters, email):
         Output:
             - assignment (np.array): team assigned.
     '''
-    assignment = np.zeros(n_clusters)
-    assignment[teams[email]] = 1
-    return assignment
+    if email in teams.keys():
+        assignment = np.zeros(n_clusters)
+        assignment[teams[email]] = 1
+        return assignment
+    else:
+        return np.zeros(n_clusters)
 
 
 def compute_summary_graph(G, n_clusters, parts):

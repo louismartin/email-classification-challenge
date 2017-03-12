@@ -9,6 +9,9 @@ from sklearn.base import BaseEstimator
 from tools.staff_graph import construct_graph, compute_teams, assign_team
 
 
+from tools.staff_graph import compute_summary_graph, construct_graph,\
+                              compute_teams, assign_team
+
 stemmer = LancasterStemmer()
 lemmatizer = WordNetLemmatizer()
 
