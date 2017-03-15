@@ -15,3 +15,6 @@ nltk.download("stopwords")
 nltk.download("words")
 nltk.download("wordnet")
 ```
+## Folders
+You need to put the data in a folder called `data` and your submissions will be
+saved in a folder called `submissions` that you need to create.
